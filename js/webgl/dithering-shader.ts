@@ -31,6 +31,13 @@ uniform vec3 u_color1;  // Start color
 uniform vec3 u_color2;  // End color
 uniform float u_transition; // Transition progress between sections
 
+// Ripple uniforms (x, y, age, intensity)
+uniform vec4 u_ripple0;
+uniform vec4 u_ripple1;
+uniform vec4 u_ripple2;
+uniform vec4 u_ripple3;
+uniform vec4 u_ripple4;
+
 // 8x8 Bayer matrix for ordered dithering
 const mat4 bayerMatrix0 = mat4(
    0.0, 32.0,  8.0, 40.0,
@@ -164,19 +171,82 @@ float smoothNoise(vec2 st) {
          (d - b) * u.x * u.y;
 }
 
-// Fractal Brownian Motion for layered noise
+// Fractal Brownian Motion for layered noise (more random)
 float fbm(vec2 st) {
   float value = 0.0;
   float amplitude = 0.5;
   float frequency = 1.0;
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 5; i++) {
     value += amplitude * smoothNoise(st * frequency);
-    frequency *= 2.0;
-    amplitude *= 0.5;
+    frequency *= 2.3; // Higher lacunarity for more variation
+    amplitude *= 0.55; // Adjusted gain for stronger high frequencies
   }
 
   return value;
+}
+
+// Mouse position color influence - smooth color shift around cursor
+float getMouseColorInfluence(vec2 uv, vec2 mousePos) {
+  vec2 diff = uv - mousePos;
+  float dist = length(diff);
+
+  // Add gentle organic noise distortion
+  float noiseDistortion = fbm(uv * 10.0 + u_time * 0.1) * 0.03;
+  dist += noiseDistortion;
+
+  // Smaller, tighter radius
+  float influence = smoothstep(0.18, 0.0, dist);
+
+  // Add subtle variation to the influence
+  float noiseVariation = fbm(uv * 15.0 + u_time * 0.05) * 0.1;
+  influence *= (1.0 - noiseVariation);
+
+  // Slower, more gentle pulsing
+  float pulse = 0.5 + 0.5 * sin(u_time * 0.3);
+  influence *= (0.85 + 0.15 * pulse);
+
+  return influence;
+}
+
+// Click ripple effect - organic expanding color change with dark border
+float getClickRippleColor(vec2 uv, vec4 ripple) {
+  if (ripple.w <= 0.0) return 0.0; // Inactive ripple
+
+  vec2 ripplePos = ripple.xy;
+  float age = ripple.z;
+  float intensity = ripple.w;
+
+  vec2 diff = uv - ripplePos;
+  float dist = length(diff);
+
+  // Add organic noise distortion to make it non-circular
+  float noiseDistortion = fbm(uv * 8.0 + age * 2.0) * 0.08;
+  dist += noiseDistortion;
+
+  // Ease-out expansion: fast start, gentle end
+  float easedAge = 1.0 - pow(1.0 - age, 3.0); // Cubic ease-out
+  float maxRadius = easedAge * 0.5; // Larger final radius
+
+  // Core light influence
+  float coreInfluence = smoothstep(maxRadius, maxRadius * 0.4, dist);
+
+  // Dark border at the edge
+  float borderStart = maxRadius * 0.85;
+  float borderEnd = maxRadius * 1.1;
+  float borderInfluence = smoothstep(borderStart, borderEnd, dist) - smoothstep(borderEnd, borderEnd * 1.15, dist);
+
+  // Combine: positive for light, negative for dark border
+  float influence = coreInfluence - (borderInfluence * 0.8);
+
+  // Add subtle dithering variation to the influence
+  float ditherNoise = fbm(uv * 12.0) * 0.15;
+  influence *= (1.0 - ditherNoise);
+
+  // Very slow, gentle fade out
+  float fade = 1.0 - pow(age, 4.0); // Quartic fade for very long lingering
+
+  return influence * fade * intensity;
 }
 
 void main() {
@@ -187,6 +257,16 @@ void main() {
   // Mouse influence (subtle parallax effect)
   vec2 mouseOffset = (u_mouse - 0.5) * 0.02; // Very subtle, 2% movement
   uv += mouseOffset;
+
+  // Calculate mouse color influence (no distortion)
+  float mouseInfluence = getMouseColorInfluence(uv, u_mouse);
+
+  // Calculate click ripple color influences (no distortion)
+  float clickInfluence = getClickRippleColor(uv, u_ripple0) +
+                         getClickRippleColor(uv, u_ripple1) +
+                         getClickRippleColor(uv, u_ripple2) +
+                         getClickRippleColor(uv, u_ripple3) +
+                         getClickRippleColor(uv, u_ripple4);
 
   // Create gradient with noise
   // Vertical gradient influenced by mouse position
@@ -204,6 +284,18 @@ void main() {
 
   // Interpolate between two colors
   vec3 color = mix(u_color1, u_color2, gradient);
+
+  // Combine mouse and click influences (can be negative for dark borders)
+  float totalInfluence = mouseInfluence + clickInfluence;
+
+  // Apply color influence (brighten for positive, darken for negative)
+  if (totalInfluence > 0.0) {
+    // Brighten - subtle glow
+    color = mix(color, color * 1.3, min(totalInfluence, 1.0) * 0.4);
+  } else {
+    // Darken for negative influence (border)
+    color = mix(color, color * 0.5, min(abs(totalInfluence), 1.0) * 0.5);
+  }
 
   // Convert to grayscale for dithering
   float luminance = dot(color, vec3(0.299, 0.587, 0.114));

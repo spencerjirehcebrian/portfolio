@@ -16,11 +16,23 @@ interface Uniforms {
   color1: WebGLUniformLocation | null;
   color2: WebGLUniformLocation | null;
   transition: WebGLUniformLocation | null;
+  ripple0: WebGLUniformLocation | null;
+  ripple1: WebGLUniformLocation | null;
+  ripple2: WebGLUniformLocation | null;
+  ripple3: WebGLUniformLocation | null;
+  ripple4: WebGLUniformLocation | null;
 }
 
 interface MousePos {
   x: number;
   y: number;
+}
+
+export interface Ripple {
+  x: number;
+  y: number;
+  startTime: number;
+  lifetime: number;
 }
 
 export class WebGLManager {
@@ -80,6 +92,9 @@ export class WebGLManager {
 
     // Get uniform locations
     this.getUniformLocations();
+
+    // Initialize ripple uniforms to zero
+    this.initializeRipples();
 
     return true;
   }
@@ -180,7 +195,12 @@ export class WebGLManager {
       time: this.gl.getUniformLocation(this.program, 'u_time'),
       color1: this.gl.getUniformLocation(this.program, 'u_color1'),
       color2: this.gl.getUniformLocation(this.program, 'u_color2'),
-      transition: this.gl.getUniformLocation(this.program, 'u_transition')
+      transition: this.gl.getUniformLocation(this.program, 'u_transition'),
+      ripple0: this.gl.getUniformLocation(this.program, 'u_ripple0'),
+      ripple1: this.gl.getUniformLocation(this.program, 'u_ripple1'),
+      ripple2: this.gl.getUniformLocation(this.program, 'u_ripple2'),
+      ripple3: this.gl.getUniformLocation(this.program, 'u_ripple3'),
+      ripple4: this.gl.getUniformLocation(this.program, 'u_ripple4')
     };
   }
 
@@ -252,6 +272,51 @@ export class WebGLManager {
 
     // Draw fullscreen quad
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  /**
+   * Initialize ripple uniforms to zero
+   */
+  initializeRipples(): void {
+    if (!this.gl || !this.program || this.isMobile) return;
+
+    this.gl.useProgram(this.program);
+
+    // Set all ripples to inactive (0, 0, 0, 0)
+    for (let i = 0; i < 5; i++) {
+      const uniformName = `ripple${i}` as keyof Uniforms;
+      const uniform = this.uniforms[uniformName];
+
+      if (uniform) {
+        this.gl.uniform4f(uniform, 0.0, 0.0, 0.0, 0.0);
+      }
+    }
+  }
+
+  /**
+   * Update ripple uniforms
+   */
+  updateRipples(ripples: Ripple[]): void {
+    if (!this.gl || !this.program || this.isMobile) return;
+
+    this.gl.useProgram(this.program);
+
+    // Update each ripple uniform (max 5)
+    for (let i = 0; i < 5; i++) {
+      const uniformName = `ripple${i}` as keyof Uniforms;
+      const uniform = this.uniforms[uniformName];
+
+      if (uniform) {
+        if (i < ripples.length) {
+          const r = ripples[i];
+          const age = (Date.now() - r.startTime) / r.lifetime;
+          this.gl.uniform4f(uniform, r.x, r.y, age, 1.0);
+        } else {
+          // Inactive ripple
+          this.gl.uniform4f(uniform, 0.0, 0.0, 0.0, 0.0);
+        }
+      }
+    }
   }
 
   /**

@@ -3,7 +3,7 @@
  * Manages section transitions, mouse tracking, and color updates
  */
 
-import { WebGLManager } from './webgl-manager';
+import { WebGLManager, Ripple } from './webgl-manager';
 
 interface ColorPair {
   color1: number[];
@@ -35,6 +35,9 @@ export class SceneController {
   lastFrameTime: number;
   sectionColors: SectionColors;
   observer: IntersectionObserver | null = null;
+  ripples: Ripple[];
+  maxRipples: number;
+  rippleLifetime: number;
 
   constructor(webglManager: WebGLManager) {
     this.webglManager = webglManager;
@@ -53,6 +56,11 @@ export class SceneController {
     this.isAnimating = false;
     this.lastFrameTime = Date.now();
 
+    // Ripple state
+    this.ripples = [];
+    this.maxRipples = 5;
+    this.rippleLifetime = 3500; // 3.5 seconds for longer fade
+
     // Section colors (HSL to RGB conversion)
     this.sectionColors = this.getSectionColors();
 
@@ -62,6 +70,7 @@ export class SceneController {
     // Set up observers and listeners
     this.setupIntersectionObserver();
     this.setupMouseTracking();
+    this.setupClickTracking();
   }
 
   /**
@@ -175,6 +184,28 @@ export class SceneController {
   }
 
   /**
+   * Set up click tracking for ripple effects (desktop only)
+   */
+  setupClickTracking(): void {
+    if (this.webglManager.isMobile) return;
+
+    window.addEventListener('click', (e: MouseEvent) => {
+      // Don't add new ripple if at max capacity
+      if (this.ripples.length >= this.maxRipples) return;
+
+      // Add new ripple
+      const ripple: Ripple = {
+        x: e.clientX / window.innerWidth,
+        y: 1.0 - (e.clientY / window.innerHeight),
+        startTime: Date.now(),
+        lifetime: this.rippleLifetime
+      };
+
+      this.ripples.push(ripple);
+    }, { passive: true });
+  }
+
+  /**
    * Change section and trigger color transition
    */
   changeSection(sectionId: string): void {
@@ -232,6 +263,9 @@ export class SceneController {
     this.mousePos.x = this.lerp(this.mousePos.x, this.targetMousePos.x, this.mouseLerp);
     this.mousePos.y = this.lerp(this.mousePos.y, this.targetMousePos.y, this.mouseLerp);
 
+    // Clean up expired ripples
+    this.ripples = this.ripples.filter(r => (now - r.startTime) < r.lifetime);
+
     // Color transition
     if (this.isTransitioning) {
       const elapsed = now - this.transitionStartTime;
@@ -264,6 +298,9 @@ export class SceneController {
       this.currentColors.color2,
       this.transitionProgress
     );
+
+    // Update ripple uniforms
+    this.webglManager.updateRipples(this.ripples);
 
     // Render
     this.webglManager.render();
