@@ -3,3 +3,8 @@ node_modules
 .next
 *.log
 dist
+.DS_Store
+.vscode
+.idea
+*.md
+README.md

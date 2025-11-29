@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "package": "npm run build && cd dist && tar -czf ../portfolio.tar.gz * && cd .. && echo 'Created portfolio.tar.gz'"
   },
   "devDependencies": {
     "terser": "^5.44.1",
