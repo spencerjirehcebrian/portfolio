@@ -210,4 +210,44 @@
   .smooth-scroll {
     scroll-behavior: smooth;
   }
+
+  /* ========================================
+     CUSTOM SCROLLBAR
+     Minimal styling to match aesthetic
+     ======================================== */
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(30, 8%, 80%) transparent;
+  }
+
+  /* WebKit browsers (Chrome, Safari, Edge) */
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: hsl(30, 8%, 80%);
+    border-radius: var(--border-radius-full);
+    border: 2px solid var(--bg-primary);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(30, 8%, 70%);
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    background: hsl(30, 6%, 60%);
+  }
+
+  /* Remove corner background */
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }

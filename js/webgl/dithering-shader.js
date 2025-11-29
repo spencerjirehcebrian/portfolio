@@ -84,10 +84,62 @@ float getBayerValue(vec2 pos) {
   return 0.0;
 }
 
-// Apply ordered dithering
-float dither(vec2 position, float brightness) {
-  float bayerValue = getBayerValue(position) / 64.0;
-  return step(bayerValue, brightness);
+// Get Bayer value with scale multiplier for texture variation
+float getBayerValueScaled(vec2 pos, float scale) {
+  vec2 scaledPos = pos / scale;
+  int x = int(mod(scaledPos.x, 8.0));
+  int y = int(mod(scaledPos.y, 8.0));
+
+  // Access the appropriate matrix value
+  int matrixIndex = x / 4;
+  int col = x % 4;
+  int row = y % 4;
+
+  mat4 matrix = (matrixIndex == 0) ? bayerMatrix0 : bayerMatrix1;
+
+  // Return the value at the specified row and column
+  if (row == 0) {
+    if (col == 0) return matrix[0][0];
+    if (col == 1) return matrix[0][1];
+    if (col == 2) return matrix[0][2];
+    if (col == 3) return matrix[0][3];
+  } else if (row == 1) {
+    if (col == 0) return matrix[1][0];
+    if (col == 1) return matrix[1][1];
+    if (col == 2) return matrix[1][2];
+    if (col == 3) return matrix[1][3];
+  } else if (row == 2) {
+    if (col == 0) return matrix[2][0];
+    if (col == 1) return matrix[2][1];
+    if (col == 2) return matrix[2][2];
+    if (col == 3) return matrix[2][3];
+  } else {
+    if (col == 0) return matrix[3][0];
+    if (col == 1) return matrix[3][1];
+    if (col == 2) return matrix[3][2];
+    if (col == 3) return matrix[3][3];
+  }
+
+  return 0.0;
+}
+
+// Apply layered dithering with posterization and animation
+float ditherLayered(vec2 position, float brightness, float levels, float scale, float timeOffset) {
+  // Animate the threshold with breathing effect (slower, greater amplitude)
+  float breathe = sin(u_time * 0.15 + timeOffset) * 1.2;
+  float animatedLevels = levels + breathe;
+
+  float bayerValue = getBayerValueScaled(position, scale) / 64.0;
+
+  // Quantize brightness into discrete levels
+  float posterized = floor(brightness * animatedLevels) / animatedLevels;
+  float nextLevel = ceil(brightness * animatedLevels) / animatedLevels;
+
+  // Get the fractional part to determine dithering threshold
+  float levelFraction = fract(brightness * animatedLevels);
+
+  // Apply dithering at level boundaries
+  return (levelFraction > bayerValue) ? nextLevel : posterized;
 }
 
 // Smooth noise function for organic gradient
@@ -156,11 +208,17 @@ void main() {
   // Convert to grayscale for dithering
   float luminance = dot(color, vec3(0.299, 0.587, 0.114));
 
-  // Apply dithering
-  float dithered = dither(pixelPos, luminance);
+  // Layer 1: Coarse posterization (bold structure) - larger scale
+  float coarseDither = ditherLayered(pixelPos, luminance, 3.5, 1.5, 0.0);
 
-  // Reconstruct color with dithering applied
-  vec3 finalColor = color * dithered;
+  // Layer 2: Fine texture (subtle detail) - larger scale
+  float fineDither = ditherLayered(pixelPos, luminance, 9.0, 2.0, 1.57);
+
+  // Blend layers: 70% coarse, 30% fine for balanced depth
+  float blendedLuminance = mix(coarseDither, fineDither, 0.3);
+
+  // Reconstruct color with layered dithering
+  vec3 finalColor = color * (blendedLuminance / max(luminance, 0.001));
 
   // Subtle vignette for depth
   float vignette = 1.0 - length(uv - 0.5) * 0.3;
@@ -216,9 +274,19 @@ float getBayerValue(vec2 pos) {
   }
 }
 
-float dither(vec2 position, float brightness) {
+// Mobile simplified layered dithering (no animation for performance)
+float ditherLayeredMobile(vec2 position, float brightness, float levels) {
   float bayerValue = getBayerValue(position) / 16.0;
-  return step(bayerValue, brightness);
+
+  // Quantize brightness into discrete levels
+  float posterized = floor(brightness * levels) / levels;
+  float nextLevel = ceil(brightness * levels) / levels;
+
+  // Get the fractional part to determine dithering threshold
+  float levelFraction = fract(brightness * levels);
+
+  // Apply dithering at level boundaries
+  return (levelFraction > bayerValue) ? nextLevel : posterized;
 }
 
 void main() {
@@ -234,10 +302,16 @@ void main() {
   // Convert to grayscale
   float luminance = dot(color, vec3(0.299, 0.587, 0.114));
 
-  // Apply dithering
-  float dithered = dither(pixelPos, luminance);
+  // Layer 1: Coarse posterization (mobile simplified)
+  float coarseDither = ditherLayeredMobile(pixelPos, luminance, 3.0);
 
-  vec3 finalColor = color * dithered;
+  // Layer 2: Fine texture
+  float fineDither = ditherLayeredMobile(pixelPos, luminance, 6.0);
+
+  // Blend layers: 70% coarse, 30% fine
+  float blendedLuminance = mix(coarseDither, fineDither, 0.3);
+
+  vec3 finalColor = color * (blendedLuminance / max(luminance, 0.001));
 
   fragColor = vec4(finalColor, 1.0);
 }
