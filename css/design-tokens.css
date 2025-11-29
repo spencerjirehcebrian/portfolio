@@ -1,0 +1,124 @@
+/* Design Tokens - Foundation CSS Variables */
+/* Refined Minimalist Aesthetic */
+
+@layer tokens {
+  :root {
+    /* ========================================
+       SPACING SCALE (8px base)
+       ======================================== */
+    --space-1: 0.25rem;  /* 4px */
+    --space-2: 0.5rem;   /* 8px */
+    --space-3: 1rem;     /* 16px */
+    --space-4: 1.5rem;   /* 24px */
+    --space-5: 2rem;     /* 32px */
+    --space-6: 3rem;     /* 48px */
+    --space-8: 4rem;     /* 64px */
+    --space-12: 6rem;    /* 96px */
+    --space-16: 8rem;    /* 128px */
+    --space-20: 10rem;   /* 160px */
+
+    /* ========================================
+       TYPOGRAPHY SCALE (1.25 ratio - Major Third)
+       ======================================== */
+    --text-xs: 0.8rem;     /* 12.8px */
+    --text-sm: 0.875rem;   /* 14px */
+    --text-base: 1rem;     /* 16px */
+    --text-lg: 1.25rem;    /* 20px */
+    --text-xl: 1.563rem;   /* 25px */
+    --text-2xl: 1.953rem;  /* 31.25px */
+    --text-3xl: 2.441rem;  /* 39px */
+    --text-4xl: 3.052rem;  /* 48.8px */
+    --text-5xl: 3.815rem;  /* 61px */
+    --text-6xl: 4.768rem;  /* 76.3px */
+
+    /* Font families */
+    --font-mono: 'Anonymous Pro', Monaco, 'Courier New', monospace;
+
+    /* Font weights */
+    --font-regular: 400;
+    --font-bold: 700;
+
+    /* Line heights */
+    --leading-tight: 1.2;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.75;
+
+    /* ========================================
+       COLORS - LIGHT MODE
+       Monochromatic with subtle temperature shifts
+       ======================================== */
+
+    /* Backgrounds - warm-tinted grays */
+    --bg-primary: hsl(30, 10%, 98%);      /* Warm off-white */
+    --bg-secondary: hsl(30, 8%, 95%);     /* Warm light gray */
+    --bg-elevated: hsl(0, 0%, 100%);      /* Pure white */
+    --bg-subtle: hsl(30, 10%, 96%);       /* Very light warm gray */
+
+    /* Text - cool-tinted for contrast */
+    --text-primary: hsl(210, 15%, 10%);   /* Cool near-black */
+    --text-secondary: hsl(210, 10%, 35%); /* Cool medium gray */
+    --text-tertiary: hsl(210, 8%, 55%);   /* Cool light gray */
+    --text-muted: hsl(210, 6%, 70%);      /* Very light cool gray */
+
+    /* Accents - muted, sophisticated */
+    --accent-primary: hsl(210, 20%, 30%); /* Muted slate blue */
+    --accent-hover: hsl(210, 25%, 40%);   /* Lighter on hover */
+    --accent-subtle: hsla(210, 20%, 30%, 0.08); /* Transparent accent */
+
+    /* Borders */
+    --border-subtle: hsl(30, 10%, 88%);   /* Very light border */
+    --border-default: hsl(30, 8%, 75%);   /* Standard border */
+    --border-emphasis: hsl(30, 6%, 60%);  /* Emphasized border */
+
+    /* Semantic colors */
+    --interactive: var(--accent-primary);
+    --interactive-hover: var(--accent-hover);
+
+    /* ========================================
+       SHADOWS (subtle depth)
+       ======================================== */
+    --shadow-sm: 0 1px 2px hsla(0, 0%, 0%, 0.04);
+    --shadow-md: 0 4px 8px hsla(0, 0%, 0%, 0.06);
+    --shadow-lg: 0 8px 16px hsla(0, 0%, 0%, 0.08);
+    --shadow-xl: 0 16px 32px hsla(0, 0%, 0%, 0.1);
+
+    /* ========================================
+       TRANSITIONS & ANIMATIONS
+       Generous durations for refined feel
+       ======================================== */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slower: 600ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Easing curves */
+    --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Subtle bounce */
+
+    /* ========================================
+       LAYOUT
+       ======================================== */
+    --max-width: 64rem;        /* 1024px - max content width */
+    --max-width-wide: 80rem;   /* 1280px - wider sections */
+    --border-radius-sm: 0.375rem;  /* 6px */
+    --border-radius-md: 0.5rem;    /* 8px */
+    --border-radius-lg: 0.75rem;   /* 12px */
+    --border-radius-xl: 1rem;      /* 16px */
+    --border-radius-full: 9999px;  /* Fully rounded */
+
+    /* ========================================
+       Z-INDEX SCALE
+       ======================================== */
+    --z-base: 1;
+    --z-dropdown: 10;
+    --z-sticky: 20;
+    --z-fixed: 30;
+    --z-modal-backdrop: 40;
+    --z-modal: 50;
+    --z-popover: 60;
+    --z-tooltip: 70;
+  }
+
+}

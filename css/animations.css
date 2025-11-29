@@ -1,0 +1,260 @@
+/* Animations */
+/* Refined, subtle animations for minimalist aesthetic */
+
+@layer animations {
+  /* ========================================
+     KEYFRAMES
+     ======================================== */
+
+  /* Gentle reveal animation for name */
+  @keyframes gentle-reveal {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Fade in animation for general elements */
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Subtle scale in */
+  @keyframes scale-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* ========================================
+     ANIMATION CLASSES
+     ======================================== */
+
+  /* Name reveal with stagger */
+  .name-reveal {
+    opacity: 0;
+    animation: gentle-reveal 1.2s var(--ease-out) forwards;
+  }
+
+  .name-reveal-delay-1 {
+    animation-delay: 0.3s;
+  }
+
+  .name-reveal-delay-2 {
+    animation-delay: 0.6s;
+  }
+
+  /* Fade in */
+  .fade-in {
+    animation: fade-in 0.8s var(--ease-out);
+  }
+
+  .fade-in-slow {
+    animation: fade-in 1.2s var(--ease-out);
+  }
+
+  /* Scale in */
+  .scale-in {
+    animation: scale-in 0.6s var(--ease-out);
+  }
+
+  /* ========================================
+     INTERSECTION OBSERVER REVEALS
+     Applied via JavaScript
+     ======================================== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity var(--transition-slower) var(--ease-out),
+                transform var(--transition-slower) var(--ease-out);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Stagger delays for multiple reveals */
+  .reveal-delay-1 {
+    transition-delay: 100ms;
+  }
+
+  .reveal-delay-2 {
+    transition-delay: 200ms;
+  }
+
+  .reveal-delay-3 {
+    transition-delay: 300ms;
+  }
+
+  .reveal-delay-4 {
+    transition-delay: 400ms;
+  }
+
+  /* ========================================
+     HOVER ANIMATIONS
+     ======================================== */
+
+  /* Subtle lift on hover */
+  .hover-lift {
+    transition: transform var(--transition-slow) var(--ease-out),
+                box-shadow var(--transition-slow) var(--ease-out);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Stronger lift for project cards */
+  .hover-lift-strong {
+    transition: transform var(--transition-slow) var(--ease-out),
+                box-shadow var(--transition-slow) var(--ease-out);
+  }
+
+  .hover-lift-strong:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: var(--shadow-xl);
+  }
+
+  /* Scale on hover */
+  .hover-scale {
+    transition: transform var(--transition-base) var(--ease-out);
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.05);
+  }
+
+  /* Subtle brightness on hover */
+  .hover-brighten {
+    transition: filter var(--transition-base) var(--ease-out);
+  }
+
+  .hover-brighten:hover {
+    filter: brightness(1.1);
+  }
+
+  /* ========================================
+     BUTTON PRESS FEEDBACK
+     ======================================== */
+  .active-scale {
+    transition: transform var(--transition-fast) var(--ease-out);
+  }
+
+  .active-scale:active {
+    transform: scale(0.98);
+  }
+
+  /* ========================================
+     TRANSITIONS
+     ======================================== */
+
+  /* Smooth color transitions */
+  .transition-colors {
+    transition: background-color var(--transition-base) var(--ease-out),
+                color var(--transition-base) var(--ease-out),
+                border-color var(--transition-base) var(--ease-out);
+  }
+
+  /* All transitions */
+  .transition-all {
+    transition: all var(--transition-base) var(--ease-out);
+  }
+
+  /* Transform only */
+  .transition-transform {
+    transition: transform var(--transition-base) var(--ease-out);
+  }
+
+  /* Opacity only */
+  .transition-opacity {
+    transition: opacity var(--transition-base) var(--ease-out);
+  }
+
+  /* ========================================
+     LOADING STATES
+     ======================================== */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--bg-secondary) 0%,
+      var(--bg-subtle) 50%,
+      var(--bg-secondary) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* ========================================
+     REDUCED MOTION
+     Disable animations for users who prefer reduced motion
+     ======================================== */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    .reveal {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .name-reveal {
+      opacity: 1 !important;
+      animation: none !important;
+    }
+
+    .hover-lift:hover,
+    .hover-lift-strong:hover {
+      transform: none !important;
+    }
+  }
+
+  /* ========================================
+     UTILITY CLASSES
+     ======================================== */
+
+  /* Remove animations */
+  .no-animation {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Delay utilities */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
+}

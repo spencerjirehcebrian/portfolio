@@ -1,0 +1,160 @@
+/* Typography System */
+/* Google Fonts: Anonymous Pro (loaded in HTML) */
+
+@layer base {
+  /* ========================================
+     HEADINGS
+     ======================================== */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-mono);
+    font-weight: var(--font-bold);
+    line-height: var(--leading-tight);
+    letter-spacing: -0.01em;
+  }
+
+  h1 {
+    font-size: clamp(var(--text-4xl), 5vw, var(--text-6xl));
+    margin-block-end: var(--space-6);
+  }
+
+  h2 {
+    font-size: clamp(var(--text-3xl), 4vw, var(--text-5xl));
+    margin-block-end: var(--space-5);
+  }
+
+  h3 {
+    font-size: clamp(var(--text-2xl), 3vw, var(--text-4xl));
+    margin-block-end: var(--space-4);
+  }
+
+  h4 {
+    font-size: clamp(var(--text-xl), 2.5vw, var(--text-3xl));
+    margin-block-end: var(--space-3);
+  }
+
+  h5 {
+    font-size: clamp(var(--text-lg), 2vw, var(--text-2xl));
+    margin-block-end: var(--space-3);
+  }
+
+  h6 {
+    font-size: clamp(var(--text-base), 1.5vw, var(--text-xl));
+    margin-block-end: var(--space-2);
+  }
+
+  /* ========================================
+     BODY TEXT
+     ======================================== */
+  p {
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    margin-block-end: var(--space-4);
+  }
+
+  p:last-child {
+    margin-block-end: 0;
+  }
+
+  /* ========================================
+     TEXT UTILITIES
+     ======================================== */
+  .text-xs {
+    font-size: var(--text-xs);
+  }
+
+  .text-sm {
+    font-size: var(--text-sm);
+  }
+
+  .text-base {
+    font-size: var(--text-base);
+  }
+
+  .text-lg {
+    font-size: var(--text-lg);
+  }
+
+  .text-xl {
+    font-size: var(--text-xl);
+  }
+
+  .text-2xl {
+    font-size: var(--text-2xl);
+  }
+
+  .text-3xl {
+    font-size: var(--text-3xl);
+  }
+
+  .text-4xl {
+    font-size: var(--text-4xl);
+  }
+
+  .text-5xl {
+    font-size: var(--text-5xl);
+  }
+
+  .text-6xl {
+    font-size: var(--text-6xl);
+  }
+
+  /* Weight utilities */
+  .font-regular {
+    font-weight: var(--font-regular);
+  }
+
+  .font-bold {
+    font-weight: var(--font-bold);
+  }
+
+  /* Leading utilities */
+  .leading-tight {
+    line-height: var(--leading-tight);
+  }
+
+  .leading-normal {
+    line-height: var(--leading-normal);
+  }
+
+  .leading-relaxed {
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Text color utilities */
+  .text-primary {
+    color: var(--text-primary);
+  }
+
+  .text-secondary {
+    color: var(--text-secondary);
+  }
+
+  .text-tertiary {
+    color: var(--text-tertiary);
+  }
+
+  .text-muted {
+    color: var(--text-muted);
+  }
+
+  /* ========================================
+     RESPONSIVE FLUID TYPOGRAPHY
+     Uses clamp() for automatic scaling
+     ======================================== */
+  .fluid-text {
+    font-size: clamp(var(--text-base), 2vw, var(--text-lg));
+  }
+
+  .fluid-heading {
+    font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl));
+  }
+
+  .fluid-display {
+    font-size: clamp(var(--text-4xl), 6vw, var(--text-6xl));
+  }
+}

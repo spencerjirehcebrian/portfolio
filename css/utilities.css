@@ -1,0 +1,213 @@
+/* Utility Classes */
+/* Minimal utility classes for common patterns */
+
+@layer utilities {
+  /* ========================================
+     VISIBILITY
+     ======================================== */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .not-sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
+  /* ========================================
+     BORDERS
+     ======================================== */
+  .border {
+    border: 1px solid var(--border-default);
+  }
+
+  .border-subtle {
+    border: 1px solid var(--border-subtle);
+  }
+
+  .border-emphasis {
+    border: 1px solid var(--border-emphasis);
+  }
+
+  .border-top {
+    border-top: 1px solid var(--border-default);
+  }
+
+  .border-bottom {
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  /* Border radius */
+  .rounded-sm {
+    border-radius: var(--border-radius-sm);
+  }
+
+  .rounded {
+    border-radius: var(--border-radius-md);
+  }
+
+  .rounded-lg {
+    border-radius: var(--border-radius-lg);
+  }
+
+  .rounded-xl {
+    border-radius: var(--border-radius-xl);
+  }
+
+  .rounded-full {
+    border-radius: var(--border-radius-full);
+  }
+
+  /* ========================================
+     SHADOWS
+     ======================================== */
+  .shadow-sm {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .shadow {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-md {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-lg {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shadow-xl {
+    box-shadow: var(--shadow-xl);
+  }
+
+  .shadow-none {
+    box-shadow: none;
+  }
+
+  /* ========================================
+     BACKDROP FILTER
+     ======================================== */
+  .backdrop-blur {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .backdrop-blur-lg {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* ========================================
+     OPACITY
+     ======================================== */
+  .opacity-0 { opacity: 0; }
+  .opacity-25 { opacity: 0.25; }
+  .opacity-50 { opacity: 0.5; }
+  .opacity-75 { opacity: 0.75; }
+  .opacity-100 { opacity: 1; }
+
+  /* ========================================
+     POINTER EVENTS
+     ======================================== */
+  .pointer-events-none {
+    pointer-events: none;
+  }
+
+  .pointer-events-auto {
+    pointer-events: auto;
+  }
+
+  /* ========================================
+     CURSOR
+     ======================================== */
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  .cursor-default {
+    cursor: default;
+  }
+
+  .cursor-not-allowed {
+    cursor: not-allowed;
+  }
+
+  /* ========================================
+     USER SELECT
+     ======================================== */
+  .select-none {
+    user-select: none;
+  }
+
+  .select-text {
+    user-select: text;
+  }
+
+  .select-all {
+    user-select: all;
+  }
+
+  /* ========================================
+     OBJECT FIT
+     ======================================== */
+  .object-contain {
+    object-fit: contain;
+  }
+
+  .object-cover {
+    object-fit: cover;
+  }
+
+  .object-fill {
+    object-fit: fill;
+  }
+
+  /* ========================================
+     ISOLATION
+     ======================================== */
+  .isolate {
+    isolation: isolate;
+  }
+
+  /* ========================================
+     WILL CHANGE
+     ======================================== */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  /* ========================================
+     INTERACTIVE STATES
+     ======================================== */
+  .no-tap-highlight {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .smooth-scroll {
+    scroll-behavior: smooth;
+  }
+}
