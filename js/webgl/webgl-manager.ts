@@ -7,16 +7,34 @@ import {
   vertexShaderSource,
   fragmentShaderSource,
   fragmentShaderSourceMobile
-} from './dithering-shader.js';
+} from './dithering-shader';
+
+interface Uniforms {
+  resolution: WebGLUniformLocation | null;
+  mouse: WebGLUniformLocation | null;
+  time: WebGLUniformLocation | null;
+  color1: WebGLUniformLocation | null;
+  color2: WebGLUniformLocation | null;
+  transition: WebGLUniformLocation | null;
+}
+
+interface MousePos {
+  x: number;
+  y: number;
+}
 
 export class WebGLManager {
-  constructor(canvas) {
+  canvas: HTMLCanvasElement;
+  gl: WebGL2RenderingContext | null = null;
+  program: WebGLProgram | null = null;
+  uniforms: Uniforms = {} as Uniforms;
+  isMobile: boolean;
+  isWebGL2Supported: boolean = true;
+  startTime: number;
+
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.gl = null;
-    this.program = null;
-    this.uniforms = {};
     this.isMobile = this.detectMobile();
-    this.isWebGL2Supported = true;
     this.startTime = Date.now();
 
     // Initialize WebGL
@@ -26,7 +44,7 @@ export class WebGLManager {
   /**
    * Detect if device is mobile
    */
-  detectMobile() {
+  detectMobile(): boolean {
     return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
            window.innerWidth < 768;
   }
@@ -34,7 +52,7 @@ export class WebGLManager {
   /**
    * Initialize WebGL context
    */
-  init() {
+  init(): boolean {
     // Try WebGL 2.0 first
     this.gl = this.canvas.getContext('webgl2', {
       alpha: true,
@@ -69,8 +87,12 @@ export class WebGLManager {
   /**
    * Compile shader
    */
-  compileShader(type, source) {
+  compileShader(type: number, source: string): WebGLShader | null {
+    if (!this.gl) return null;
+
     const shader = this.gl.createShader(type);
+    if (!shader) return null;
+
     this.gl.shaderSource(shader, source);
     this.gl.compileShader(shader);
 
@@ -86,7 +108,9 @@ export class WebGLManager {
   /**
    * Create shader program
    */
-  createProgram() {
+  createProgram(): boolean {
+    if (!this.gl) return false;
+
     // Choose fragment shader based on device
     const fragShader = this.isMobile ? fragmentShaderSourceMobile : fragmentShaderSource;
 
@@ -99,6 +123,8 @@ export class WebGLManager {
 
     // Create and link program
     this.program = this.gl.createProgram();
+    if (!this.program) return false;
+
     this.gl.attachShader(this.program, vertexShader);
     this.gl.attachShader(this.program, fragmentShader);
     this.gl.linkProgram(this.program);
@@ -120,7 +146,9 @@ export class WebGLManager {
   /**
    * Set up fullscreen quad geometry
    */
-  setupGeometry() {
+  setupGeometry(): void {
+    if (!this.gl || !this.program) return;
+
     // Fullscreen quad vertices
     const vertices = new Float32Array([
       -1, -1,  // Bottom left
@@ -143,7 +171,9 @@ export class WebGLManager {
   /**
    * Get uniform locations
    */
-  getUniformLocations() {
+  getUniformLocations(): void {
+    if (!this.gl || !this.program) return;
+
     this.uniforms = {
       resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
       mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
@@ -157,7 +187,7 @@ export class WebGLManager {
   /**
    * Resize canvas and update viewport
    */
-  resize() {
+  resize(): void {
     const dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -180,7 +210,7 @@ export class WebGLManager {
   /**
    * Update uniforms
    */
-  updateUniforms(mousePos, color1, color2, transition = 0) {
+  updateUniforms(mousePos: MousePos, color1: number[], color2: number[], transition: number = 0): void {
     if (!this.gl || !this.program) return;
 
     this.gl.useProgram(this.program);
@@ -214,7 +244,7 @@ export class WebGLManager {
   /**
    * Render frame
    */
-  render() {
+  render(): void {
     if (!this.gl || !this.program) return;
 
     this.gl.clearColor(0, 0, 0, 0);
@@ -227,8 +257,8 @@ export class WebGLManager {
   /**
    * Clean up WebGL resources
    */
-  dispose() {
-    if (this.program) {
+  dispose(): void {
+    if (this.program && this.gl) {
       this.gl.deleteProgram(this.program);
     }
     if (this.gl) {

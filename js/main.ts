@@ -3,15 +3,26 @@
  * Initializes all systems: WebGL, theme management, navigation, and animations
  */
 
-import { WebGLManager } from './webgl/webgl-manager.js';
-import { SceneController } from './webgl/scene-controller.js';
+// Import styles (Vite handles this)
+import '../css/main.css';
+
+// Existing imports
+import { WebGLManager } from './webgl/webgl-manager';
+import { SceneController } from './webgl/scene-controller';
+
+// Extend Window interface for debugging
+declare global {
+  interface Window {
+    portfolio: Portfolio;
+  }
+}
 
 class Portfolio {
-  constructor() {
-    this.webglManager = null;
-    this.sceneController = null;
-    this.themeInitialized = false;
+  webglManager: WebGLManager | null = null;
+  sceneController: SceneController | null = null;
+  themeInitialized: boolean = false;
 
+  constructor() {
     // Initialize
     this.init();
   }
@@ -19,7 +30,7 @@ class Portfolio {
   /**
    * Initialize all systems
    */
-  init() {
+  init(): void {
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.setup());
@@ -31,7 +42,7 @@ class Portfolio {
   /**
    * Setup all components
    */
-  setup() {
+  setup(): void {
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -59,8 +70,8 @@ class Portfolio {
   /**
    * Initialize WebGL
    */
-  initWebGL() {
-    const canvas = document.getElementById('webgl-canvas');
+  initWebGL(): void {
+    const canvas = document.getElementById('webgl-canvas') as HTMLCanvasElement | null;
     if (!canvas) {
       console.warn('WebGL canvas not found');
       return;
@@ -82,7 +93,7 @@ class Portfolio {
   /**
    * Initialize navigation
    */
-  initNavigation() {
+  initNavigation(): void {
     const nav = document.querySelector('.nav');
     const mobileMenuToggle = document.querySelector('[data-mobile-menu-toggle]');
     const mobileMenu = document.querySelector('[data-mobile-menu]');
@@ -103,8 +114,9 @@ class Portfolio {
       });
 
       // Close mobile menu when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!mobileMenuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+      document.addEventListener('click', (e: MouseEvent) => {
+        const target = e.target as Node;
+        if (!mobileMenuToggle.contains(target) && !mobileMenu.contains(target)) {
           mobileMenu.classList.add('hidden');
         }
       });
@@ -114,7 +126,7 @@ class Portfolio {
   /**
    * Initialize scroll effects
    */
-  initScrollEffects() {
+  initScrollEffects(): void {
     const nav = document.querySelector('.nav');
     let lastScrollY = window.scrollY;
 
@@ -135,7 +147,7 @@ class Portfolio {
   /**
    * Initialize reveal animations (Intersection Observer)
    */
-  initRevealAnimations() {
+  initRevealAnimations(): void {
     const revealElements = document.querySelectorAll('.reveal');
 
     if (revealElements.length === 0) return;
@@ -158,17 +170,17 @@ class Portfolio {
   /**
    * Initialize smooth scroll
    */
-  initSmoothScroll() {
-    const links = document.querySelectorAll('a[href^="#"]');
+  initSmoothScroll(): void {
+    const links = document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]');
 
     links.forEach(link => {
-      link.addEventListener('click', (e) => {
+      link.addEventListener('click', (e: MouseEvent) => {
         const href = link.getAttribute('href');
         if (href === '#') return;
 
         e.preventDefault();
 
-        const target = document.querySelector(href);
+        const target = href ? document.querySelector(href) : null;
         if (target) {
           target.scrollIntoView({
             behavior: 'smooth',
@@ -182,7 +194,7 @@ class Portfolio {
   /**
    * Handle window resize
    */
-  handleResize() {
+  handleResize(): void {
     if (this.webglManager) {
       this.webglManager.resize();
     }
@@ -191,7 +203,7 @@ class Portfolio {
   /**
    * Clean up
    */
-  dispose() {
+  dispose(): void {
     if (this.sceneController) {
       this.sceneController.dispose();
     }

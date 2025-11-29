@@ -1,34 +1,51 @@
-.PHONY: help start serve stop clean
+.PHONY: help install dev start serve build preview clean
 
 # Default target
 help:
 	@echo "Portfolio Development Commands"
 	@echo "=============================="
 	@echo ""
-	@echo "make start    - Start development server on http://localhost:8000"
-	@echo "make serve    - Alias for 'make start'"
-	@echo "make stop     - Stop the development server"
-	@echo "make clean    - Remove temporary files"
+	@echo "make install  - Install dependencies"
+	@echo "make dev      - Start Vite dev server (HMR enabled)"
+	@echo "make start    - Alias for 'make dev'"
+	@echo "make serve    - Alias for 'make dev'"
+	@echo "make build    - Build for production"
+	@echo "make preview  - Preview production build locally"
+	@echo "make clean    - Remove build artifacts and dependencies"
 	@echo ""
 
-# Start development server
-start:
-	@echo "Starting development server..."
+# Install dependencies
+install:
+	@echo "Installing dependencies..."
+	@npm install
+
+# Start Vite development server (with HMR)
+dev:
+	@echo "Starting Vite dev server..."
 	@echo "Portfolio available at: http://localhost:8000"
 	@echo "Press Ctrl+C to stop"
-	@python3 -m http.server 8000 --bind 127.0.0.1
+	@npm run dev
 
-# Alias for start
-serve: start
+# Aliases for dev
+start: dev
+serve: dev
 
-# Stop server (if running in background)
-stop:
-	@echo "Stopping development server..."
-	@-pkill -f "python3 -m http.server 8000" 2>/dev/null || echo "No server running"
+# Build for production
+build:
+	@echo "Building for production..."
+	@npm run build
+	@echo "Build complete! Output in ./dist/"
 
-# Clean temporary files
+# Preview production build
+preview:
+	@echo "Starting preview server..."
+	@echo "Preview available at: http://localhost:8000"
+	@npm run preview
+
+# Clean build artifacts
 clean:
-	@echo "Cleaning temporary files..."
-	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	@echo "Cleaning build artifacts..."
+	@rm -rf dist
+	@rm -rf node_modules
 	@find . -type f -name ".DS_Store" -delete 2>/dev/null || true
 	@echo "Clean complete"

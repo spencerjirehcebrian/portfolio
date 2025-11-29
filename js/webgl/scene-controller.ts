@@ -3,8 +3,40 @@
  * Manages section transitions, mouse tracking, and color updates
  */
 
+import { WebGLManager } from './webgl-manager';
+
+interface ColorPair {
+  color1: number[];
+  color2: number[];
+}
+
+interface MousePos {
+  x: number;
+  y: number;
+}
+
+interface SectionColors {
+  [key: string]: ColorPair;
+}
+
 export class SceneController {
-  constructor(webglManager) {
+  webglManager: WebGLManager;
+  currentSection: string;
+  targetColors: ColorPair;
+  currentColors: ColorPair;
+  transitionProgress: number;
+  transitionDuration: number;
+  transitionStartTime: number;
+  isTransitioning: boolean;
+  mousePos: MousePos;
+  targetMousePos: MousePos;
+  mouseLerp: number;
+  isAnimating: boolean;
+  lastFrameTime: number;
+  sectionColors: SectionColors;
+  observer: IntersectionObserver | null = null;
+
+  constructor(webglManager: WebGLManager) {
     this.webglManager = webglManager;
     this.currentSection = 'hero';
     this.targetColors = { color1: [0, 0, 0], color2: [0, 0, 0] };
@@ -35,7 +67,7 @@ export class SceneController {
   /**
    * Define section colors based on design tokens
    */
-  getSectionColors() {
+  getSectionColors(): SectionColors {
     // Light mode colors (single mode)
     return {
       hero: {
@@ -68,7 +100,7 @@ export class SceneController {
   /**
    * Convert HSL to RGB (values 0-1)
    */
-  hslToRgb(h, s, l) {
+  hslToRgb(h: number, s: number, l: number): number[] {
     h /= 360;
     s /= 100;
     l /= 100;
@@ -78,7 +110,7 @@ export class SceneController {
     if (s === 0) {
       r = g = b = l;
     } else {
-      const hue2rgb = (p, q, t) => {
+      const hue2rgb = (p: number, q: number, t: number): number => {
         if (t < 0) t += 1;
         if (t > 1) t -= 1;
         if (t < 1 / 6) return p + (q - p) * 6 * t;
@@ -100,8 +132,8 @@ export class SceneController {
   /**
    * Set up Intersection Observer for section detection
    */
-  setupIntersectionObserver() {
-    const options = {
+  setupIntersectionObserver(): void {
+    const options: IntersectionObserverInit = {
       root: null,
       rootMargin: '-50% 0px -50% 0px', // Trigger when section is in center
       threshold: 0
@@ -118,16 +150,16 @@ export class SceneController {
 
     // Observe all sections
     const sections = document.querySelectorAll('section[id]');
-    sections.forEach(section => this.observer.observe(section));
+    sections.forEach(section => this.observer?.observe(section));
   }
 
   /**
    * Set up mouse tracking (throttled for performance)
    */
-  setupMouseTracking() {
-    let rafId = null;
+  setupMouseTracking(): void {
+    let rafId: number | null = null;
 
-    const updateMouse = (e) => {
+    const updateMouse = (e: MouseEvent): void => {
       if (rafId) return;
 
       rafId = requestAnimationFrame(() => {
@@ -145,7 +177,7 @@ export class SceneController {
   /**
    * Change section and trigger color transition
    */
-  changeSection(sectionId) {
+  changeSection(sectionId: string): void {
     if (sectionId === this.currentSection && !this.isTransitioning) {
       return;
     }
@@ -157,7 +189,7 @@ export class SceneController {
   /**
    * Set target colors for a section
    */
-  setColors(sectionId, immediate = false) {
+  setColors(sectionId: string, immediate: boolean = false): void {
     const colors = this.sectionColors[sectionId] || this.sectionColors.hero;
 
     this.targetColors.color1 = colors.color1;
@@ -177,21 +209,21 @@ export class SceneController {
   /**
    * Linear interpolation
    */
-  lerp(start, end, t) {
+  lerp(start: number, end: number, t: number): number {
     return start + (end - start) * t;
   }
 
   /**
    * Ease out cubic
    */
-  easeOutCubic(t) {
+  easeOutCubic(t: number): number {
     return 1 - Math.pow(1 - t, 3);
   }
 
   /**
    * Update loop
    */
-  update() {
+  update(): void {
     const now = Date.now();
     const delta = now - this.lastFrameTime;
     this.lastFrameTime = now;
@@ -240,13 +272,13 @@ export class SceneController {
   /**
    * Start animation loop
    */
-  start() {
+  start(): void {
     if (this.isAnimating) return;
 
     this.isAnimating = true;
     this.lastFrameTime = Date.now();
 
-    const animate = () => {
+    const animate = (): void => {
       if (!this.isAnimating) return;
 
       this.update();
@@ -259,14 +291,14 @@ export class SceneController {
   /**
    * Stop animation loop
    */
-  stop() {
+  stop(): void {
     this.isAnimating = false;
   }
 
   /**
    * Clean up
    */
-  dispose() {
+  dispose(): void {
     this.stop();
     if (this.observer) {
       this.observer.disconnect();
