@@ -190,7 +190,12 @@ float fbm(vec2 st) {
 
 // Mouse position color influence - smooth color shift around cursor
 float getMouseColorInfluence(vec2 uv, vec2 mousePos) {
-  vec2 diff = uv - mousePos;
+  // Apply aspect ratio correction for circular effect
+  float aspect = u_resolution.x / u_resolution.y;
+  vec2 correctedUV = vec2(uv.x * aspect, uv.y);
+  vec2 correctedMousePos = vec2(mousePos.x * aspect, mousePos.y);
+
+  vec2 diff = correctedUV - correctedMousePos;
   float dist = length(diff);
 
   // Add gentle organic noise distortion
@@ -219,7 +224,12 @@ float getClickRippleColor(vec2 uv, vec4 ripple) {
   float age = ripple.z;
   float intensity = ripple.w;
 
-  vec2 diff = uv - ripplePos;
+  // Apply aspect ratio correction for circular ripples
+  float aspect = u_resolution.x / u_resolution.y;
+  vec2 correctedUV = vec2(uv.x * aspect, uv.y);
+  vec2 correctedRipplePos = vec2(ripplePos.x * aspect, ripplePos.y);
+
+  vec2 diff = correctedUV - correctedRipplePos;
   float dist = length(diff);
 
   // Add organic noise distortion to make it non-circular
