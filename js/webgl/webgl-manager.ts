@@ -6,8 +6,8 @@
 import {
   vertexShaderSource,
   fragmentShaderSource,
-  fragmentShaderSourceMobile
-} from './dithering-shader';
+  fragmentShaderSourceMobile,
+} from "./dithering-shader";
 
 interface Uniforms {
   resolution: WebGLUniformLocation | null;
@@ -21,6 +21,8 @@ interface Uniforms {
   ripple2: WebGLUniformLocation | null;
   ripple3: WebGLUniformLocation | null;
   ripple4: WebGLUniformLocation | null;
+  coarseLevels: WebGLUniformLocation | null;
+  fineLevels: WebGLUniformLocation | null;
 }
 
 interface MousePos {
@@ -43,11 +45,20 @@ export class WebGLManager {
   isMobile: boolean;
   isWebGL2Supported: boolean = true;
   startTime: number;
+  coarseLevels: number;
+  fineLevels: number;
+  viewportWidth: number;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.isMobile = this.detectMobile();
     this.startTime = Date.now();
+
+    // Initialize responsive posterization levels
+    this.viewportWidth = window.innerWidth;
+    const levels = this.calculatePosterizationLevels(this.viewportWidth);
+    this.coarseLevels = levels.coarse;
+    this.fineLevels = levels.fine;
 
     // Initialize WebGL
     this.init();
@@ -57,8 +68,31 @@ export class WebGLManager {
    * Detect if device is mobile
    */
   detectMobile(): boolean {
-    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
-           window.innerWidth < 768;
+    return (
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+      window.innerWidth < 768
+    );
+  }
+
+  /**
+   * Calculate posterization levels based on viewport width
+   * Uses stepped breakpoints matching CSS responsive design
+   */
+  calculatePosterizationLevels(width: number): {
+    coarse: number;
+    fine: number;
+  } {
+    // Stepped breakpoints matching CSS responsive design
+    if (width < 640) {
+      // Mobile: very smooth gradient, minimal posterization
+      return { coarse: 3.5, fine: 6.0 };
+    } else if (width < 1024) {
+      // Tablet: moderate complexity
+      return { coarse: 3.5, fine: 6.5 };
+    } else {
+      // Desktop: full dithering effect
+      return { coarse: 3.5, fine: 9.0 };
+    }
   }
 
   /**
@@ -66,15 +100,15 @@ export class WebGLManager {
    */
   init(): boolean {
     // Try WebGL 2.0 first
-    this.gl = this.canvas.getContext('webgl2', {
+    this.gl = this.canvas.getContext("webgl2", {
       alpha: true,
       antialias: false,
       preserveDrawingBuffer: false,
-      powerPreference: 'low-power' // Better for battery on mobile
+      powerPreference: "low-power", // Better for battery on mobile
     });
 
     if (!this.gl) {
-      console.warn('WebGL 2.0 not supported, falling back to CSS gradient');
+      console.warn("WebGL 2.0 not supported, falling back to CSS gradient");
       this.isWebGL2Supported = false;
       return false;
     }
@@ -112,7 +146,10 @@ export class WebGLManager {
     this.gl.compileShader(shader);
 
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-      console.error('Shader compilation error:', this.gl.getShaderInfoLog(shader));
+      console.error(
+        "Shader compilation error:",
+        this.gl.getShaderInfoLog(shader)
+      );
       this.gl.deleteShader(shader);
       return null;
     }
@@ -127,10 +164,18 @@ export class WebGLManager {
     if (!this.gl) return false;
 
     // Choose fragment shader based on device
-    const fragShader = this.isMobile ? fragmentShaderSourceMobile : fragmentShaderSource;
+    const fragShader = this.isMobile
+      ? fragmentShaderSourceMobile
+      : fragmentShaderSource;
 
-    const vertexShader = this.compileShader(this.gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = this.compileShader(this.gl.FRAGMENT_SHADER, fragShader);
+    const vertexShader = this.compileShader(
+      this.gl.VERTEX_SHADER,
+      vertexShaderSource
+    );
+    const fragmentShader = this.compileShader(
+      this.gl.FRAGMENT_SHADER,
+      fragShader
+    );
 
     if (!vertexShader || !fragmentShader) {
       return false;
@@ -145,7 +190,10 @@ export class WebGLManager {
     this.gl.linkProgram(this.program);
 
     if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
-      console.error('Program linking error:', this.gl.getProgramInfoLog(this.program));
+      console.error(
+        "Program linking error:",
+        this.gl.getProgramInfoLog(this.program)
+      );
       return false;
     }
 
@@ -154,6 +202,9 @@ export class WebGLManager {
     // Clean up shaders (no longer needed after linking)
     this.gl.deleteShader(vertexShader);
     this.gl.deleteShader(fragmentShader);
+
+    // Initialize posterization levels immediately after program creation
+    this.updatePosterizationLevels();
 
     return true;
   }
@@ -166,10 +217,14 @@ export class WebGLManager {
 
     // Fullscreen quad vertices
     const vertices = new Float32Array([
-      -1, -1,  // Bottom left
-       1, -1,  // Bottom right
-      -1,  1,  // Top left
-       1,  1   // Top right
+      -1,
+      -1, // Bottom left
+      1,
+      -1, // Bottom right
+      -1,
+      1, // Top left
+      1,
+      1, // Top right
     ]);
 
     // Create buffer
@@ -178,9 +233,19 @@ export class WebGLManager {
     this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
 
     // Set up attribute
-    const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+    const positionLocation = this.gl.getAttribLocation(
+      this.program,
+      "a_position"
+    );
     this.gl.enableVertexAttribArray(positionLocation);
-    this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      positionLocation,
+      2,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
   }
 
   /**
@@ -190,18 +255,37 @@ export class WebGLManager {
     if (!this.gl || !this.program) return;
 
     this.uniforms = {
-      resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
-      mouse: this.gl.getUniformLocation(this.program, 'u_mouse'),
-      time: this.gl.getUniformLocation(this.program, 'u_time'),
-      color1: this.gl.getUniformLocation(this.program, 'u_color1'),
-      color2: this.gl.getUniformLocation(this.program, 'u_color2'),
-      transition: this.gl.getUniformLocation(this.program, 'u_transition'),
-      ripple0: this.gl.getUniformLocation(this.program, 'u_ripple0'),
-      ripple1: this.gl.getUniformLocation(this.program, 'u_ripple1'),
-      ripple2: this.gl.getUniformLocation(this.program, 'u_ripple2'),
-      ripple3: this.gl.getUniformLocation(this.program, 'u_ripple3'),
-      ripple4: this.gl.getUniformLocation(this.program, 'u_ripple4')
+      resolution: this.gl.getUniformLocation(this.program, "u_resolution"),
+      mouse: this.gl.getUniformLocation(this.program, "u_mouse"),
+      time: this.gl.getUniformLocation(this.program, "u_time"),
+      color1: this.gl.getUniformLocation(this.program, "u_color1"),
+      color2: this.gl.getUniformLocation(this.program, "u_color2"),
+      transition: this.gl.getUniformLocation(this.program, "u_transition"),
+      ripple0: this.gl.getUniformLocation(this.program, "u_ripple0"),
+      ripple1: this.gl.getUniformLocation(this.program, "u_ripple1"),
+      ripple2: this.gl.getUniformLocation(this.program, "u_ripple2"),
+      ripple3: this.gl.getUniformLocation(this.program, "u_ripple3"),
+      ripple4: this.gl.getUniformLocation(this.program, "u_ripple4"),
+      coarseLevels: this.gl.getUniformLocation(this.program, "u_coarseLevels"),
+      fineLevels: this.gl.getUniformLocation(this.program, "u_fineLevels"),
     };
+  }
+
+  /**
+   * Update posterization level uniforms
+   */
+  updatePosterizationLevels(): void {
+    if (!this.gl || !this.program) return;
+
+    this.gl.useProgram(this.program);
+
+    if (this.uniforms.coarseLevels) {
+      this.gl.uniform1f(this.uniforms.coarseLevels, this.coarseLevels);
+    }
+
+    if (this.uniforms.fineLevels) {
+      this.gl.uniform1f(this.uniforms.fineLevels, this.fineLevels);
+    }
   }
 
   /**
@@ -214,15 +298,28 @@ export class WebGLManager {
 
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
-    this.canvas.style.width = width + 'px';
-    this.canvas.style.height = height + 'px';
+    this.canvas.style.width = width + "px";
+    this.canvas.style.height = height + "px";
 
     if (this.gl) {
       this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
       // Update resolution uniform
       if (this.uniforms.resolution) {
-        this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+        this.gl.uniform2f(
+          this.uniforms.resolution,
+          this.canvas.width,
+          this.canvas.height
+        );
+      }
+
+      // Recalculate posterization levels when viewport width changes
+      if (width !== this.viewportWidth) {
+        this.viewportWidth = width;
+        const levels = this.calculatePosterizationLevels(width);
+        this.coarseLevels = levels.coarse;
+        this.fineLevels = levels.fine;
+        this.updatePosterizationLevels();
       }
     }
   }
@@ -230,7 +327,12 @@ export class WebGLManager {
   /**
    * Update uniforms
    */
-  updateUniforms(mousePos: MousePos, color1: number[], color2: number[], transition: number = 0): void {
+  updateUniforms(
+    mousePos: MousePos,
+    color1: number[],
+    color2: number[],
+    transition: number = 0
+  ): void {
     if (!this.gl || !this.program) return;
 
     this.gl.useProgram(this.program);
@@ -240,8 +342,8 @@ export class WebGLManager {
       this.gl.uniform2f(this.uniforms.mouse, mousePos.x, mousePos.y);
     }
 
-    // Update time
-    if (this.uniforms.time && !this.isMobile) {
+    // Update time (enabled for both mobile and desktop)
+    if (this.uniforms.time) {
       const elapsed = (Date.now() - this.startTime) / 1000;
       this.gl.uniform1f(this.uniforms.time, elapsed);
     }
@@ -259,6 +361,9 @@ export class WebGLManager {
     if (this.uniforms.transition && !this.isMobile) {
       this.gl.uniform1f(this.uniforms.transition, transition);
     }
+
+    // Update posterization levels
+    this.updatePosterizationLevels();
   }
 
   /**
@@ -327,7 +432,7 @@ export class WebGLManager {
       this.gl.deleteProgram(this.program);
     }
     if (this.gl) {
-      const loseContext = this.gl.getExtension('WEBGL_lose_context');
+      const loseContext = this.gl.getExtension("WEBGL_lose_context");
       if (loseContext) {
         loseContext.loseContext();
       }
