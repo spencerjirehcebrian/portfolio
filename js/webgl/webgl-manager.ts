@@ -113,9 +113,6 @@ export class WebGLManager {
       return false;
     }
 
-    // Set viewport
-    this.resize();
-
     // Create shader program
     if (!this.createProgram()) {
       return false;
@@ -126,6 +123,9 @@ export class WebGLManager {
 
     // Get uniform locations
     this.getUniformLocations();
+
+    // Set viewport and initialize uniforms (including u_resolution)
+    this.resize();
 
     // Initialize ripple uniforms to zero
     this.initializeRipples();
