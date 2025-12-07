@@ -79,10 +79,17 @@ class Portfolio {
 
     this.webglManager = new WebGLManager(canvas);
 
-    if (!this.webglManager.isWebGL2Supported) {
-      console.warn('WebGL 2.0 not supported, using CSS fallback');
+    if (this.webglManager.webglVersion === 0) {
+      console.warn('WebGL not supported, using CSS fallback');
       canvas.style.display = 'none';
       return;
+    }
+
+    // Log which version is being used
+    if (this.webglManager.webglVersion === 2) {
+      console.log('Using WebGL 2.0 for enhanced effects');
+    } else if (this.webglManager.webglVersion === 1) {
+      console.log('Using WebGL 1.0 for compatibility');
     }
 
     // Initialize scene controller

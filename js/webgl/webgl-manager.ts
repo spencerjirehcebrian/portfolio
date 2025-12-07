@@ -7,6 +7,9 @@ import {
   vertexShaderSource,
   fragmentShaderSource,
   fragmentShaderSourceMobile,
+  vertexShaderSourceWebGL1,
+  fragmentShaderSourceWebGL1,
+  fragmentShaderSourceMobileWebGL1,
 } from "./dithering-shader";
 
 interface Uniforms {
@@ -39,11 +42,13 @@ export interface Ripple {
 
 export class WebGLManager {
   canvas: HTMLCanvasElement;
-  gl: WebGL2RenderingContext | null = null;
+  gl: WebGL2RenderingContext | WebGLRenderingContext | null = null;
   program: WebGLProgram | null = null;
   uniforms: Uniforms = {} as Uniforms;
   isMobile: boolean;
-  isWebGL2Supported: boolean = true;
+  webglVersion: 1 | 2 | 0 = 0; // 0 = not supported, 1 = WebGL 1.0, 2 = WebGL 2.0
+  isWebGL2Supported: boolean = false;
+  isWebGL1Supported: boolean = false;
   startTime: number;
   coarseLevels: number;
   fineLevels: number;
@@ -105,12 +110,40 @@ export class WebGLManager {
       antialias: false,
       preserveDrawingBuffer: false,
       powerPreference: "low-power", // Better for battery on mobile
-    });
+    }) as WebGL2RenderingContext | null;
 
-    if (!this.gl) {
-      console.warn("WebGL 2.0 not supported, falling back to CSS gradient");
-      this.isWebGL2Supported = false;
-      return false;
+    if (this.gl) {
+      this.webglVersion = 2;
+      this.isWebGL2Supported = true;
+      console.log("WebGL 2.0 initialized");
+    } else {
+      // Fallback to WebGL 1.0
+      this.gl = this.canvas.getContext("webgl", {
+        alpha: true,
+        antialias: false,
+        preserveDrawingBuffer: false,
+        powerPreference: "low-power",
+      }) as WebGLRenderingContext | null;
+
+      // Also try experimental-webgl for older browsers
+      if (!this.gl) {
+        this.gl = this.canvas.getContext("experimental-webgl", {
+          alpha: true,
+          antialias: false,
+          preserveDrawingBuffer: false,
+          powerPreference: "low-power",
+        }) as WebGLRenderingContext | null;
+      }
+
+      if (this.gl) {
+        this.webglVersion = 1;
+        this.isWebGL1Supported = true;
+        console.log("WebGL 1.0 initialized");
+      } else {
+        console.warn("WebGL not supported, falling back to CSS gradient");
+        this.webglVersion = 0;
+        return false;
+      }
     }
 
     // Create shader program
@@ -163,15 +196,25 @@ export class WebGLManager {
   createProgram(): boolean {
     if (!this.gl) return false;
 
-    // Choose fragment shader based on device
-    const fragShader = this.isMobile
-      ? fragmentShaderSourceMobile
-      : fragmentShaderSource;
+    // Choose shaders based on WebGL version and device type
+    let vertShader: string;
+    let fragShader: string;
 
-    const vertexShader = this.compileShader(
-      this.gl.VERTEX_SHADER,
-      vertexShaderSource
-    );
+    if (this.webglVersion === 2) {
+      // WebGL 2.0 shaders (GLSL ES 3.0)
+      vertShader = vertexShaderSource;
+      fragShader = this.isMobile
+        ? fragmentShaderSourceMobile
+        : fragmentShaderSource;
+    } else {
+      // WebGL 1.0 shaders (GLSL ES 1.0)
+      vertShader = vertexShaderSourceWebGL1;
+      fragShader = this.isMobile
+        ? fragmentShaderSourceMobileWebGL1
+        : fragmentShaderSourceWebGL1;
+    }
+
+    const vertexShader = this.compileShader(this.gl.VERTEX_SHADER, vertShader);
     const fragmentShader = this.compileShader(
       this.gl.FRAGMENT_SHADER,
       fragShader
