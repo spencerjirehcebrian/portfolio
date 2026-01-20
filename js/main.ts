@@ -1,13 +1,13 @@
 /**
  * Main Entry Point
- * Initializes all systems: WebGL, theme management, navigation, and animations
+ * Initializes all systems: WebGL watercolor effect, navigation, and animations
  */
 
 // Import styles (Vite handles this)
 import '../css/main.css';
 
-// Existing imports
-import { WebGLManager } from './webgl/webgl-manager';
+// WebGL imports
+import { ThreeManager } from './webgl/three-manager';
 import { SceneController } from './webgl/scene-controller';
 
 // Extend Window interface for debugging
@@ -18,12 +18,11 @@ declare global {
 }
 
 class Portfolio {
-  webglManager: WebGLManager | null = null;
+  threeManager: ThreeManager | null = null;
   sceneController: SceneController | null = null;
   themeInitialized: boolean = false;
 
   constructor() {
-    // Initialize
     this.init();
   }
 
@@ -31,7 +30,6 @@ class Portfolio {
    * Initialize all systems
    */
   init(): void {
-    // Wait for DOM to be ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.setup());
     } else {
@@ -47,7 +45,6 @@ class Portfolio {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (!prefersReducedMotion) {
-      // Initialize WebGL
       this.initWebGL();
     } else {
       // Hide canvas if user prefers reduced motion
@@ -68,7 +65,17 @@ class Portfolio {
   }
 
   /**
-   * Initialize WebGL
+   * Detect if device is mobile
+   */
+  detectMobile(): boolean {
+    return (
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+      window.innerWidth < 768
+    );
+  }
+
+  /**
+   * Initialize WebGL with Three.js watercolor effect
    */
   initWebGL(): void {
     const canvas = document.getElementById('webgl-canvas') as HTMLCanvasElement | null;
@@ -77,31 +84,38 @@ class Portfolio {
       return;
     }
 
-    this.webglManager = new WebGLManager(canvas);
+    try {
+      this.threeManager = new ThreeManager({
+        canvas,
+        isMobile: this.detectMobile()
+      });
 
-    if (this.webglManager.webglVersion === 0) {
-      console.warn('WebGL not supported, using CSS fallback');
+      if (this.threeManager.webglVersion === 0) {
+        console.warn('WebGL not supported, using CSS fallback');
+        canvas.style.display = 'none';
+        return;
+      }
+
+      // Log which version is being used
+      if (this.threeManager.webglVersion === 2) {
+        console.log('Using WebGL 2.0 with Three.js watercolor effect');
+      } else if (this.threeManager.webglVersion === 1) {
+        console.log('Using WebGL 1.0 with Three.js watercolor effect');
+      }
+
+      // Initialize scene controller
+      this.sceneController = new SceneController(this.threeManager);
+      this.sceneController.start();
+    } catch (error) {
+      console.error('Failed to initialize WebGL:', error);
       canvas.style.display = 'none';
-      return;
     }
-
-    // Log which version is being used
-    if (this.webglManager.webglVersion === 2) {
-      console.log('Using WebGL 2.0 for enhanced effects');
-    } else if (this.webglManager.webglVersion === 1) {
-      console.log('Using WebGL 1.0 for compatibility');
-    }
-
-    // Initialize scene controller
-    this.sceneController = new SceneController(this.webglManager);
-    this.sceneController.start();
   }
 
   /**
    * Initialize navigation
    */
   initNavigation(): void {
-    const nav = document.querySelector('.nav');
     const mobileMenuToggle = document.querySelector('[data-mobile-menu-toggle]');
     const mobileMenu = document.querySelector('[data-mobile-menu]');
     const mobileLinks = mobileMenu?.querySelectorAll('a');
@@ -135,7 +149,6 @@ class Portfolio {
    */
   initScrollEffects(): void {
     const nav = document.querySelector('.nav');
-    let lastScrollY = window.scrollY;
 
     window.addEventListener('scroll', () => {
       const scrollY = window.scrollY;
@@ -146,8 +159,6 @@ class Portfolio {
       } else {
         nav?.classList.remove('scrolled');
       }
-
-      lastScrollY = scrollY;
     }, { passive: true });
   }
 
@@ -202,8 +213,8 @@ class Portfolio {
    * Handle window resize
    */
   handleResize(): void {
-    if (this.webglManager) {
-      this.webglManager.resize();
+    if (this.threeManager) {
+      this.threeManager.resize();
     }
   }
 
@@ -214,8 +225,8 @@ class Portfolio {
     if (this.sceneController) {
       this.sceneController.dispose();
     }
-    if (this.webglManager) {
-      this.webglManager.dispose();
+    if (this.threeManager) {
+      this.threeManager.dispose();
     }
   }
 }

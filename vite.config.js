@@ -23,9 +23,11 @@ export default defineConfig({
       output: {
         manualChunks: {
           'webgl': [
-            '/js/webgl/webgl-manager.ts',
+            '/js/webgl/three-manager.ts',
             '/js/webgl/scene-controller.ts',
-            '/js/webgl/dithering-shader.ts'
+            '/js/webgl/shaders/procedural-gradient.ts',
+            '/js/webgl/shaders/kuwahara.ts',
+            '/js/webgl/shaders/watercolor-enhance.ts'
           ]
         },
         assetFileNames: (assetInfo) => {

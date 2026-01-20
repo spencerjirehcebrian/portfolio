@@ -1,9 +1,10 @@
 /**
  * Scene Controller
  * Manages section transitions, mouse tracking, and color updates
+ * Mouse position controls Kuwahara filter reveal
  */
 
-import { WebGLManager, Ripple } from './webgl-manager';
+import { ThreeManager } from './three-manager';
 
 interface ColorPair {
   color1: number[];
@@ -20,7 +21,7 @@ interface SectionColors {
 }
 
 export class SceneController {
-  webglManager: WebGLManager;
+  threeManager: ThreeManager;
   currentSection: string;
   targetColors: ColorPair;
   currentColors: ColorPair;
@@ -30,17 +31,19 @@ export class SceneController {
   isTransitioning: boolean;
   mousePos: MousePos;
   targetMousePos: MousePos;
+  prevMousePos: MousePos;
   mouseLerp: number;
+  isMouseActive: boolean;
+  moveIntensity: number;
+  targetMoveIntensity: number;
   isAnimating: boolean;
   lastFrameTime: number;
+  startTime: number;
   sectionColors: SectionColors;
   observer: IntersectionObserver | null = null;
-  ripples: Ripple[];
-  maxRipples: number;
-  rippleLifetime: number;
 
-  constructor(webglManager: WebGLManager) {
-    this.webglManager = webglManager;
+  constructor(threeManager: ThreeManager) {
+    this.threeManager = threeManager;
     this.currentSection = 'hero';
     this.targetColors = { color1: [0, 0, 0], color2: [0, 0, 0] };
     this.currentColors = { color1: [0, 0, 0], color2: [0, 0, 0] };
@@ -51,33 +54,31 @@ export class SceneController {
 
     this.mousePos = { x: 0.5, y: 0.5 };
     this.targetMousePos = { x: 0.5, y: 0.5 };
+    this.prevMousePos = { x: 0.5, y: 0.5 };
     this.mouseLerp = 0.1; // Smooth mouse following
+    this.isMouseActive = false;
+    this.moveIntensity = 0;
+    this.targetMoveIntensity = 0;
 
     this.isAnimating = false;
     this.lastFrameTime = Date.now();
-
-    // Ripple state
-    this.ripples = [];
-    this.maxRipples = 5;
-    this.rippleLifetime = 3500; // 3.5 seconds for longer fade
+    this.startTime = Date.now();
 
     // Section colors (HSL to RGB conversion)
     this.sectionColors = this.getSectionColors();
 
     // Initialize with hero colors
-    this.setColors('hero');
+    this.setColors('hero', true);
 
     // Set up observers and listeners
     this.setupIntersectionObserver();
     this.setupMouseTracking();
-    this.setupClickTracking();
   }
 
   /**
    * Define section colors based on design tokens
    */
   getSectionColors(): SectionColors {
-    // Light mode colors (single mode)
     return {
       hero: {
         color1: this.hslToRgb(210, 15, 90),
@@ -144,7 +145,7 @@ export class SceneController {
   setupIntersectionObserver(): void {
     const options: IntersectionObserverInit = {
       root: null,
-      rootMargin: '-50% 0px -50% 0px', // Trigger when section is in center
+      rootMargin: '-50% 0px -50% 0px',
       threshold: 0
     };
 
@@ -157,13 +158,12 @@ export class SceneController {
       });
     }, options);
 
-    // Observe all sections
     const sections = document.querySelectorAll('section[id]');
     sections.forEach(section => this.observer?.observe(section));
   }
 
   /**
-   * Set up mouse tracking (throttled for performance)
+   * Set up mouse tracking (controls Kuwahara reveal)
    */
   setupMouseTracking(): void {
     let rafId: number | null = null;
@@ -174,35 +174,24 @@ export class SceneController {
       rafId = requestAnimationFrame(() => {
         this.targetMousePos.x = e.clientX / window.innerWidth;
         this.targetMousePos.y = 1.0 - (e.clientY / window.innerHeight);
+        this.isMouseActive = true;
         rafId = null;
       });
     };
 
-    if (!this.webglManager.isMobile) {
+    const handleMouseEnter = (): void => {
+      this.isMouseActive = true;
+    };
+
+    const handleMouseLeave = (): void => {
+      this.isMouseActive = false;
+    };
+
+    if (!this.threeManager.isMobile) {
       window.addEventListener('mousemove', updateMouse, { passive: true });
+      document.addEventListener('mouseenter', handleMouseEnter, { passive: true });
+      document.addEventListener('mouseleave', handleMouseLeave, { passive: true });
     }
-  }
-
-  /**
-   * Set up click tracking for ripple effects (desktop only)
-   */
-  setupClickTracking(): void {
-    if (this.webglManager.isMobile) return;
-
-    window.addEventListener('click', (e: MouseEvent) => {
-      // Don't add new ripple if at max capacity
-      if (this.ripples.length >= this.maxRipples) return;
-
-      // Add new ripple
-      const ripple: Ripple = {
-        x: e.clientX / window.innerWidth,
-        y: 1.0 - (e.clientY / window.innerHeight),
-        startTime: Date.now(),
-        lifetime: this.rippleLifetime
-      };
-
-      this.ripples.push(ripple);
-    }, { passive: true });
   }
 
   /**
@@ -256,15 +245,32 @@ export class SceneController {
    */
   update(): void {
     const now = Date.now();
-    const delta = now - this.lastFrameTime;
     this.lastFrameTime = now;
 
     // Smooth mouse following
     this.mousePos.x = this.lerp(this.mousePos.x, this.targetMousePos.x, this.mouseLerp);
     this.mousePos.y = this.lerp(this.mousePos.y, this.targetMousePos.y, this.mouseLerp);
 
-    // Clean up expired ripples
-    this.ripples = this.ripples.filter(r => (now - r.startTime) < r.lifetime);
+    // Calculate mouse movement speed
+    const dx = this.mousePos.x - this.prevMousePos.x;
+    const dy = this.mousePos.y - this.prevMousePos.y;
+    const moveSpeed = Math.sqrt(dx * dx + dy * dy);
+
+    // Update target intensity based on movement (ramps up quickly)
+    this.targetMoveIntensity = Math.min(moveSpeed * 50, 1.0);
+
+    // Smooth the intensity (fast ramp up, slow decay)
+    if (this.targetMoveIntensity > this.moveIntensity) {
+      // Ramp up quickly
+      this.moveIntensity = this.lerp(this.moveIntensity, this.targetMoveIntensity, 0.3);
+    } else {
+      // Decay slowly
+      this.moveIntensity = this.lerp(this.moveIntensity, this.targetMoveIntensity, 0.05);
+    }
+
+    // Store previous position for next frame
+    this.prevMousePos.x = this.mousePos.x;
+    this.prevMousePos.y = this.mousePos.y;
 
     // Color transition
     if (this.isTransitioning) {
@@ -291,19 +297,22 @@ export class SceneController {
       }
     }
 
-    // Update WebGL uniforms
-    this.webglManager.updateUniforms(
-      this.mousePos,
-      this.currentColors.color1,
-      this.currentColors.color2,
-      this.transitionProgress
+    // Update ThreeManager uniforms
+    const elapsed = (now - this.startTime) / 1000;
+    this.threeManager.updateTime(elapsed);
+    this.threeManager.updateMouse(this.mousePos.x, this.mousePos.y);
+    this.threeManager.updateColors(this.currentColors.color1, this.currentColors.color2);
+
+    // Update displacement with mouse position and movement intensity
+    this.threeManager.updateDisplacement(
+      this.mousePos.x,
+      this.mousePos.y,
+      this.isMouseActive,
+      this.moveIntensity
     );
 
-    // Update ripple uniforms
-    this.webglManager.updateRipples(this.ripples);
-
     // Render
-    this.webglManager.render();
+    this.threeManager.render();
   }
 
   /**
