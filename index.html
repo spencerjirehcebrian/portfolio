@@ -25,8 +25,8 @@
   <nav class="dropdown-menu" data-dropdown-menu aria-hidden="true">
     <a href="#hero" class="dropdown-link">Home</a>
     <a href="#experience" class="dropdown-link">Experience</a>
-    <a href="#skills" class="dropdown-link">Skills</a>
-    <a href="#projects" class="dropdown-link">Work</a>
+    <a href="#skills" class="dropdown-link">Tech Stack</a>
+    <a href="#projects" class="dropdown-link">Projects</a>
     <a href="#contact" class="dropdown-link">Contact</a>
   </nav>
 
@@ -46,8 +46,8 @@
 
         <nav class="hero-index name-reveal name-reveal-delay-2">
           <a href="#experience" class="hero-index-link"><span class="hero-index-num">01</span> Experience</a>
-          <a href="#skills" class="hero-index-link"><span class="hero-index-num">02</span> Skills</a>
-          <a href="#projects" class="hero-index-link"><span class="hero-index-num">03</span> Work</a>
+          <a href="#skills" class="hero-index-link"><span class="hero-index-num">02</span> Tech Stack</a>
+          <a href="#projects" class="hero-index-link"><span class="hero-index-num">03</span> Projects</a>
           <a href="#contact" class="hero-index-link"><span class="hero-index-num">04</span> Contact</a>
         </nav>
 
@@ -77,35 +77,111 @@
 
   <!-- Experience Section - Right Card -->
   <section id="experience" class="section-framed section-right">
+    <!-- Detail Panel - appears in left empty space on desktop -->
+    <div class="experience-detail-panel" data-experience-panel aria-hidden="true">
+      <button class="panel-close-btn" data-panel-close aria-label="Close details">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+      <div class="panel-content">
+        <header class="panel-header">
+          <h3 class="panel-title" data-panel-title></h3>
+          <p class="panel-company" data-panel-company></p>
+          <p class="panel-duration" data-panel-duration></p>
+        </header>
+        <div class="panel-body">
+          <div class="panel-section">
+            <h4 class="panel-section-title">Responsibilities</h4>
+            <ul class="panel-responsibilities" data-panel-responsibilities></ul>
+          </div>
+          <div class="panel-section">
+            <h4 class="panel-section-title">Tech Stack</h4>
+            <p class="panel-tech" data-panel-tech></p>
+          </div>
+        </div>
+        <footer class="panel-footer">
+          <a class="panel-link" data-panel-link target="_blank" rel="noopener noreferrer">
+            Visit Company
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+        </footer>
+      </div>
+    </div>
+
     <div class="section-card">
       <h2 class="section-heading">Experience</h2>
 
       <div class="experience-list">
-        <div class="experience-item reveal">
+        <div class="experience-item reveal" data-experience>
           <div class="experience-header">
             <span class="experience-year">2024</span>
             <h3 class="experience-title">Junior Software Engineer</h3>
           </div>
           <p class="experience-company">Stratpoint Technologies, Inc.</p>
           <p class="experience-description">Full-stack Engineer @ AI Labs, working on innovative AI-powered solutions and scalable applications.</p>
+          <!-- Hidden detail content -->
+          <div class="experience-detail-content" hidden>
+            <span data-title>Junior Software Engineer</span>
+            <span data-company>Stratpoint Technologies, Inc.</span>
+            <span data-duration>July 2024 - Present</span>
+            <span data-website>https://www.stratpoint.com</span>
+            <span data-tech>Python, TypeScript, React, Next.js, FastAPI, AWS, PostgreSQL, Docker, LangChain</span>
+            <ul data-responsibilities>
+              <li>Develop and maintain AI-powered applications as part of the AI Labs team</li>
+              <li>Build scalable full-stack solutions using modern frameworks and cloud infrastructure</li>
+              <li>Implement LLM-based features and integrate various AI/ML models into production systems</li>
+              <li>Collaborate with cross-functional teams to deliver innovative software products</li>
+            </ul>
+          </div>
         </div>
 
-        <div class="experience-item reveal">
+        <div class="experience-item reveal" data-experience>
           <div class="experience-header">
             <span class="experience-year">2024</span>
             <h3 class="experience-title">Java Intern</h3>
           </div>
           <p class="experience-company">Stratpoint Technologies, Inc.</p>
           <p class="experience-description">Backend Development with Spring Boot & Node.js. DevOps practices using Kubernetes & Docker.</p>
+          <!-- Hidden detail content -->
+          <div class="experience-detail-content" hidden>
+            <span data-title>Java Intern</span>
+            <span data-company>Stratpoint Technologies, Inc.</span>
+            <span data-duration>February 2024 - July 2024</span>
+            <span data-website>https://www.stratpoint.com</span>
+            <span data-tech>Java, Spring Boot, Node.js, NestJS, Kubernetes, Docker, PostgreSQL, MongoDB</span>
+            <ul data-responsibilities>
+              <li>Developed backend services using Spring Boot and Node.js frameworks</li>
+              <li>Implemented RESTful APIs and microservices architecture patterns</li>
+              <li>Gained hands-on experience with Kubernetes orchestration and Docker containerization</li>
+              <li>Participated in code reviews and agile development practices</li>
+            </ul>
+          </div>
         </div>
 
-        <div class="experience-item reveal">
+        <div class="experience-item reveal" data-experience>
           <div class="experience-header">
             <span class="experience-year">2023</span>
             <h3 class="experience-title">Committee Chairperson</h3>
           </div>
           <p class="experience-company">Junior Philippine Computer Society - Mapua University</p>
           <p class="experience-description">Project and Control Committee Chairperson. Creative Committee Chairperson.</p>
+          <!-- Hidden detail content -->
+          <div class="experience-detail-content" hidden>
+            <span data-title>Committee Chairperson</span>
+            <span data-company>Junior Philippine Computer Society - Mapua University</span>
+            <span data-duration>August 2022 - July 2023</span>
+            <span data-website>https://www.mapua.edu.ph</span>
+            <span data-tech>Event Management, Leadership, Project Planning, Adobe Creative Suite, Figma</span>
+            <ul data-responsibilities>
+              <li>Led the Project and Control Committee, overseeing event logistics and execution</li>
+              <li>Served as Creative Committee Chairperson, directing visual design and branding</li>
+              <li>Coordinated with university administration and external sponsors</li>
+              <li>Managed team of committee members and delegated tasks effectively</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -114,7 +190,7 @@
   <!-- Skills Section - Left Card -->
   <section id="skills" class="section-framed section-left">
     <div class="section-card">
-      <h2 class="section-heading">Expertise</h2>
+      <h2 class="section-heading">Tech Stack</h2>
 
       <div class="skills-compact">
         <div class="skill-group reveal">
@@ -138,7 +214,7 @@
   <!-- Projects Section - Right Card -->
   <section id="projects" class="section-framed section-right">
     <div class="section-card">
-      <h2 class="section-heading">Selected Work</h2>
+      <h2 class="section-heading">Projects</h2>
 
       <div class="projects-compact">
         <article class="project-row reveal" data-project>

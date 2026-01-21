@@ -118,10 +118,13 @@
     width: 100%;
     /* Align to frame edges */
     margin: 0;
-    /* Center content vertically */
+    /* Flex column for header + scrollable content */
     display: flex;
     flex-direction: column;
     justify-content: center;
+    /* Constrain to viewport minus frame */
+    max-height: calc(100vh - 2 * var(--frame-size));
+    max-height: calc(100dvh - 2 * var(--frame-size));
   }
 
   @media (min-width: 640px) {
@@ -176,6 +179,81 @@
 
   .section-contact .section-card {
     background: hsla(30, 10%, 98%, 0.82);
+  }
+
+  /* ========================================
+     SCROLLABLE SECTION CONTENT
+     Header stays fixed, content scrolls
+     ======================================== */
+  .section-heading {
+    flex-shrink: 0; /* Never shrink the heading */
+  }
+
+  /* Content containers that scroll when overflow */
+  .experience-list,
+  .skills-compact,
+  .projects-compact {
+    flex: 1;
+    overflow-y: auto;
+    /* Subtle fade hint at bottom when scrollable */
+    mask-image: linear-gradient(
+      to bottom,
+      black calc(100% - var(--space-4)),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black calc(100% - var(--space-4)),
+      transparent 100%
+    );
+    /* Add padding at bottom for fade area */
+    padding-bottom: var(--space-4);
+  }
+
+  /* Remove mask when content doesn't overflow (JS will handle this) */
+  .experience-list:not(.is-scrollable),
+  .skills-compact:not(.is-scrollable),
+  .projects-compact:not(.is-scrollable) {
+    mask-image: none;
+    -webkit-mask-image: none;
+    padding-bottom: 0;
+  }
+
+  /* Custom scrollbar for content areas */
+  .experience-list::-webkit-scrollbar,
+  .skills-compact::-webkit-scrollbar,
+  .projects-compact::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .experience-list::-webkit-scrollbar-track,
+  .skills-compact::-webkit-scrollbar-track,
+  .projects-compact::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .experience-list::-webkit-scrollbar-thumb,
+  .skills-compact::-webkit-scrollbar-thumb,
+  .projects-compact::-webkit-scrollbar-thumb {
+    background: hsla(30, 10%, 60%, 0.3);
+    border-radius: 2px;
+  }
+
+  .experience-list::-webkit-scrollbar-thumb:hover,
+  .skills-compact::-webkit-scrollbar-thumb:hover,
+  .projects-compact::-webkit-scrollbar-thumb:hover {
+    background: hsla(30, 10%, 50%, 0.5);
+  }
+
+  /* Sections with scrollable content: align to top */
+  .section-framed:not(.section-hero):not(.section-contact) .section-card {
+    justify-content: flex-start;
+  }
+
+  /* Hero and contact cards: no max-height constraint */
+  .section-hero .section-card,
+  .section-contact .section-card {
+    max-height: none;
   }
 
   /* ========================================
