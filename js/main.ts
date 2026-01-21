@@ -61,6 +61,7 @@ class Portfolio {
     this.initSmoothScroll();
     this.initProjectToggles();
     this.initExperiencePanel();
+    this.initSkillsInteraction();
 
     // Handle window resize
     window.addEventListener('resize', () => this.handleResize());
@@ -526,6 +527,63 @@ class Portfolio {
 
     // Listen for resize
     window.addEventListener('resize', handleResize);
+  }
+
+  /**
+   * Initialize skills section interactions
+   * Click/tap expands skill item inline (accordion style)
+   */
+  initSkillsInteraction(): void {
+    const skillItems = document.querySelectorAll<HTMLButtonElement>('[data-skill]');
+
+    if (skillItems.length === 0) return;
+
+    // Toggle inline expansion
+    const toggleExpansion = (item: HTMLButtonElement): void => {
+      const isExpanded = item.classList.contains('is-expanded');
+
+      // Collapse all other items
+      skillItems.forEach(otherItem => {
+        if (otherItem !== item) {
+          otherItem.classList.remove('is-expanded');
+        }
+      });
+
+      // Toggle current item
+      if (isExpanded) {
+        item.classList.remove('is-expanded');
+      } else {
+        item.classList.add('is-expanded');
+
+        // Scroll item into view if needed
+        setTimeout(() => {
+          item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+      }
+    };
+
+    // Event listeners for each skill item
+    skillItems.forEach(item => {
+      // Click/tap to expand
+      item.addEventListener('click', () => {
+        toggleExpansion(item);
+      });
+
+      // Keyboard: Enter/Space to expand
+      item.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleExpansion(item);
+        }
+      });
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        skillItems.forEach(item => item.classList.remove('is-expanded'));
+      }
+    });
   }
 
   /**

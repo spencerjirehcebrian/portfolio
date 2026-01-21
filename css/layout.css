@@ -191,7 +191,7 @@
 
   /* Content containers that scroll when overflow */
   .experience-list,
-  .skills-compact,
+  .skills-tiered,
   .projects-compact {
     flex: 1;
     overflow-y: auto;
@@ -212,7 +212,7 @@
 
   /* Remove mask when content doesn't overflow (JS will handle this) */
   .experience-list:not(.is-scrollable),
-  .skills-compact:not(.is-scrollable),
+  .skills-tiered:not(.is-scrollable),
   .projects-compact:not(.is-scrollable) {
     mask-image: none;
     -webkit-mask-image: none;
@@ -221,26 +221,26 @@
 
   /* Custom scrollbar for content areas */
   .experience-list::-webkit-scrollbar,
-  .skills-compact::-webkit-scrollbar,
+  .skills-tiered::-webkit-scrollbar,
   .projects-compact::-webkit-scrollbar {
     width: 4px;
   }
 
   .experience-list::-webkit-scrollbar-track,
-  .skills-compact::-webkit-scrollbar-track,
+  .skills-tiered::-webkit-scrollbar-track,
   .projects-compact::-webkit-scrollbar-track {
     background: transparent;
   }
 
   .experience-list::-webkit-scrollbar-thumb,
-  .skills-compact::-webkit-scrollbar-thumb,
+  .skills-tiered::-webkit-scrollbar-thumb,
   .projects-compact::-webkit-scrollbar-thumb {
     background: hsla(30, 10%, 60%, 0.3);
     border-radius: 2px;
   }
 
   .experience-list::-webkit-scrollbar-thumb:hover,
-  .skills-compact::-webkit-scrollbar-thumb:hover,
+  .skills-tiered::-webkit-scrollbar-thumb:hover,
   .projects-compact::-webkit-scrollbar-thumb:hover {
     background: hsla(30, 10%, 50%, 0.5);
   }
