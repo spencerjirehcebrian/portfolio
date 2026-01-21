@@ -17,6 +17,7 @@
 
   /* Set core root defaults */
   html {
+    font-size: 106.25%; /* 17px base (17/16 = 1.0625) */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;

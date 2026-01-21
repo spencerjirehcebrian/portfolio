@@ -4,32 +4,41 @@
 @layer tokens {
   :root {
     /* ========================================
-       SPACING SCALE (8px base)
+       GOLDEN RATIO CONSTANTS
        ======================================== */
-    --space-1: 0.25rem;  /* 4px */
-    --space-2: 0.5rem;   /* 8px */
-    --space-3: 1rem;     /* 16px */
-    --space-4: 1.5rem;   /* 24px */
-    --space-5: 2rem;     /* 32px */
-    --space-6: 3rem;     /* 48px */
-    --space-8: 4rem;     /* 64px */
-    --space-12: 6rem;    /* 96px */
-    --space-16: 8rem;    /* 128px */
-    --space-20: 10rem;   /* 160px */
+    --phi: 1.618;
+    --phi-inverse: 0.618;
+
+    /* ========================================
+       SPACING SCALE (Golden ratio influenced)
+       Balanced scale with golden proportions at key intervals
+       ======================================== */
+    --space-1: 0.25rem;    /* 4px - micro */
+    --space-2: 0.5rem;     /* 8px */
+    --space-3: 1rem;       /* 17px */
+    --space-4: 1.5rem;     /* 25.5px */
+    --space-5: 2.5rem;     /* 42.5px - phi * 26 */
+    --space-6: 3rem;       /* 51px */
+    --space-8: 4rem;       /* 68px - phi * 42 */
+    --space-10: 5rem;      /* 85px */
+    --space-12: 6.5rem;    /* 110px - phi * 68 */
+    --space-16: 8rem;      /* 136px */
+    --space-20: 10.5rem;   /* 178px - phi * 110 */
 
     /* ========================================
        TYPOGRAPHY SCALE (1.25 ratio - Major Third)
+       Base: 17px for improved readability
        ======================================== */
-    --text-xs: 0.8rem;     /* 12.8px */
-    --text-sm: 0.875rem;   /* 14px */
-    --text-base: 1rem;     /* 16px */
-    --text-lg: 1.25rem;    /* 20px */
-    --text-xl: 1.563rem;   /* 25px */
-    --text-2xl: 1.953rem;  /* 31.25px */
-    --text-3xl: 2.441rem;  /* 39px */
-    --text-4xl: 3.052rem;  /* 48.8px */
-    --text-5xl: 3.815rem;  /* 61px */
-    --text-6xl: 4.768rem;  /* 76.3px */
+    --text-xs: 0.824rem;   /* 14px */
+    --text-sm: 0.941rem;   /* 16px */
+    --text-base: 1rem;     /* 17px (root) */
+    --text-lg: 1.25rem;    /* 21.25px */
+    --text-xl: 1.563rem;   /* 26.5px */
+    --text-2xl: 1.953rem;  /* 33.2px */
+    --text-3xl: 2.441rem;  /* 41.5px */
+    --text-4xl: 3.052rem;  /* 51.9px */
+    --text-5xl: 3.815rem;  /* 64.9px */
+    --text-6xl: 4.768rem;  /* 81px */
 
     /* Font families */
     --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
@@ -40,9 +49,9 @@
     --font-regular: 400;
     --font-bold: 700;
 
-    /* Line heights */
+    /* Line heights - Golden ratio for body */
     --leading-tight: 1.2;
-    --leading-normal: 1.5;
+    --leading-normal: 1.618;
     --leading-relaxed: 1.75;
 
     /* ========================================
@@ -58,14 +67,14 @@
 
     /* Text - cool-tinted for contrast */
     --text-primary: hsl(210, 15%, 10%);   /* Cool near-black */
-    --text-secondary: hsl(210, 10%, 35%); /* Cool medium gray */
-    --text-tertiary: hsl(210, 8%, 55%);   /* Cool light gray */
-    --text-muted: hsl(210, 6%, 70%);      /* Very light cool gray */
+    --text-secondary: hsl(210, 12%, 28%); /* Darker for better readability */
+    --text-tertiary: hsl(210, 8%, 48%);   /* Strengthened for visibility */
+    --text-muted: hsl(210, 6%, 62%);      /* Slightly darker for legibility */
 
-    /* Accents - muted, sophisticated */
-    --accent-primary: hsl(210, 20%, 30%); /* Muted slate blue */
-    --accent-hover: hsl(210, 25%, 40%);   /* Lighter on hover */
-    --accent-subtle: hsla(210, 20%, 30%, 0.08); /* Transparent accent */
+    /* Accents - warmer, sophisticated */
+    --accent-primary: hsl(200, 18%, 32%); /* Warmer slate for harmony */
+    --accent-hover: hsl(200, 22%, 42%);   /* Lighter on hover */
+    --accent-subtle: hsla(200, 18%, 32%, 0.1); /* Slightly more visible */
 
     /* Borders */
     --border-subtle: hsl(30, 10%, 88%);   /* Very light border */

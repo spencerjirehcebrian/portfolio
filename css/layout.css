@@ -83,7 +83,7 @@
     content: '';
     position: absolute;
     inset: var(--frame-size);
-    border: 1px solid hsla(30, 10%, 70%, 0.4);
+    border: 1px solid hsla(30, 12%, 65%, 0.55);
     pointer-events: none;
     z-index: 1;
   }
@@ -107,11 +107,14 @@
      SECTION CARDS - Fill to Frame Edges
      ======================================== */
   .section-card {
-    background: hsla(30, 10%, 98%, 0.85);
+    background: hsla(30, 10%, 98%, 0.88);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsla(30, 10%, 85%, 0.5);
-    padding: var(--space-6);
+    border: 1px solid hsla(30, 10%, 80%, 0.6);
+    box-shadow:
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.5),
+      0 4px 24px hsla(30, 10%, 20%, 0.06);
+    padding: var(--space-6) var(--space-5);
     width: 100%;
     /* Align to frame edges */
     margin: 0;
@@ -123,27 +126,28 @@
 
   @media (min-width: 640px) {
     .section-card {
-      padding: var(--space-8);
+      padding: var(--space-10) var(--space-8);
     }
   }
 
   /* Desktop: Cards fill their side up to the frame */
+  /* Inverted golden ratio: 38.2% card, 61.8% negative space */
   @media (min-width: 1024px) {
     .section-card {
-      padding: var(--space-8) var(--space-10);
+      padding: var(--space-6) var(--space-5);
     }
 
-    /* Left card: touches left frame, extends ~55% */
+    /* Left card: touches left frame, compact width */
     .section-left .section-card {
-      width: 55%;
+      width: 38.2%;
       border-left: none;
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
     }
 
-    /* Right card: touches right frame, extends ~50% */
+    /* Right card: touches right frame, compact width */
     .section-right .section-card {
-      width: 50%;
+      width: 38.2%;
       border-right: none;
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
@@ -156,6 +160,22 @@
       border-right: none;
       border-radius: 0;
     }
+  }
+
+  /* Large screens: increase padding */
+  @media (min-width: 1280px) {
+    .section-card {
+      padding: var(--space-6);
+    }
+  }
+
+  /* Varying opacity per section type for depth progression */
+  .section-hero .section-card {
+    background: hsla(30, 10%, 98%, 0.92);
+  }
+
+  .section-contact .section-card {
+    background: hsla(30, 10%, 98%, 0.82);
   }
 
   /* ========================================
@@ -174,16 +194,23 @@
   }
 
   @media (min-width: 1024px) {
+    .section-hero {
+      align-items: flex-end; /* Card anchored to bottom */
+    }
+
     .section-hero .section-card {
-      width: 58%;
+      width: 38.2%; /* Inverted golden ratio - more negative space */
       border-left: none;
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
+      border-bottom: none;
+      padding-block: var(--space-8);
     }
   }
 
   /* ========================================
-     CONTACT SECTION - Full height, card at bottom 33%
+     CONTACT SECTION - Full height, card at bottom
+     Golden ratio: 38.2% of viewport for contact area
      ======================================== */
   .section-contact {
     min-height: 100vh;
@@ -192,11 +219,11 @@
   }
 
   .section-contact .section-card {
-    height: calc(25vh - var(--frame-size));
-    height: calc(25dvh - var(--frame-size));
-    min-height: auto;
+    height: calc(38.2vh - var(--frame-size));
+    height: calc(38.2dvh - var(--frame-size));
+    min-height: 220px;
     flex: none; /* Don't stretch */
-    padding-block: var(--space-8);
+    padding-block: var(--space-5);
     border-bottom: none;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -204,9 +231,17 @@
     justify-content: center;
   }
 
+  @media (min-width: 640px) {
+    .section-contact .section-card {
+      padding-block: var(--space-6);
+    }
+  }
+
   @media (min-width: 1024px) {
     .section-contact .section-card {
-      padding-block: var(--space-12);
+      height: calc(38.2vh - var(--frame-size));
+      height: calc(38.2dvh - var(--frame-size));
+      padding-block: var(--space-8);
     }
   }
 

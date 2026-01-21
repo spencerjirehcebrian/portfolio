@@ -15,71 +15,43 @@
   <!-- WebGL Canvas Background -->
   <canvas id="webgl-canvas" class="webgl-canvas"></canvas>
 
-  <!-- Navigation -->
-  <nav class="nav nav-minimal">
-    <div class="nav-container">
-      <a href="#hero" class="nav-logo">Spencer Cebrian</a>
+  <!-- Menu Trigger - Glued to Frame Corner -->
+  <button class="menu-trigger" data-menu-trigger aria-label="Open menu">
+    <span class="menu-trigger-line"></span>
+    <span class="menu-trigger-line"></span>
+  </button>
 
-      <!-- Desktop Navigation -->
-      <div class="nav-links">
-        <a href="#experience" class="nav-link">Experience</a>
-        <a href="#projects" class="nav-link">Work</a>
-        <a href="#contact" class="nav-link">Contact</a>
-      </div>
-
-      <!-- Mobile Menu Toggle -->
-      <div class="mobile-menu-toggle">
-        <button data-mobile-menu-toggle class="mobile-menu-button" aria-label="Toggle menu">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Mobile Menu -->
-    <div data-mobile-menu class="mobile-menu hidden">
-      <div class="mobile-menu-links">
-        <a href="#experience" class="mobile-menu-link">Experience</a>
-        <a href="#projects" class="mobile-menu-link">Work</a>
-        <a href="#contact" class="mobile-menu-link">Contact</a>
-      </div>
-    </div>
+  <!-- Dropdown Menu - Glued below trigger -->
+  <nav class="dropdown-menu" data-dropdown-menu aria-hidden="true">
+    <a href="#hero" class="dropdown-link">Home</a>
+    <a href="#experience" class="dropdown-link">Experience</a>
+    <a href="#skills" class="dropdown-link">Skills</a>
+    <a href="#projects" class="dropdown-link">Work</a>
+    <a href="#contact" class="dropdown-link">Contact</a>
   </nav>
 
   <!-- Hero Section - Left Card -->
   <section id="hero" class="section-framed section-left section-hero">
     <div class="section-card">
       <div class="hero-content">
-        <h1 class="hero-name name-reveal">
-          Spencer Jireh<br>
-          <span class="hero-name-last">G. Cebrian</span>
-        </h1>
+        <div class="hero-identity">
+          <h1 class="hero-name name-reveal">
+            Spencer Jireh <span class="hero-name-last">Cebrian</span>
+          </h1>
 
-        <p class="hero-title name-reveal name-reveal-delay-1">
-          Junior Software Engineer
-        </p>
-
-        <p class="hero-bio name-reveal name-reveal-delay-1">
-          Computer Science student at Mapua University with a specialization in Data Science. Currently working as a Full-stack Engineer at Stratpoint Technologies' AI Labs.
-        </p>
-
-        <div class="hero-details name-reveal name-reveal-delay-2">
-          <div class="hero-detail">
-            <span class="hero-detail-label">Location</span>
-            <span class="hero-detail-value">Quezon City, Metro Manila</span>
-          </div>
-          <div class="hero-detail">
-            <span class="hero-detail-label">Education</span>
-            <span class="hero-detail-value">BS Computer Science, Data Science</span>
-          </div>
-          <div class="hero-detail">
-            <span class="hero-detail-label">Status</span>
-            <span class="hero-detail-value">Available for opportunities</span>
-          </div>
+          <p class="hero-title name-reveal name-reveal-delay-1">
+            Fullstack Developer & Software Engineer
+          </p>
         </div>
 
-        <div class="hero-social-links name-reveal name-reveal-delay-2">
+        <nav class="hero-index name-reveal name-reveal-delay-2">
+          <a href="#experience" class="hero-index-link"><span class="hero-index-num">01</span> Experience</a>
+          <a href="#skills" class="hero-index-link"><span class="hero-index-num">02</span> Skills</a>
+          <a href="#projects" class="hero-index-link"><span class="hero-index-num">03</span> Work</a>
+          <a href="#contact" class="hero-index-link"><span class="hero-index-num">04</span> Contact</a>
+        </nav>
+
+        <div class="hero-social-links name-reveal name-reveal-delay-3">
           <a href="https://github.com/spencerjirehcebrian" target="_blank" rel="noopener noreferrer" class="hero-social-link" aria-label="GitHub">
             <svg class="hero-social-icon" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
@@ -140,7 +112,7 @@
   </section>
 
   <!-- Skills Section - Left Card -->
-  <section class="section-framed section-left">
+  <section id="skills" class="section-framed section-left">
     <div class="section-card">
       <h2 class="section-heading">Expertise</h2>
 

@@ -117,50 +117,69 @@ class Portfolio {
    * Initialize navigation
    */
   initNavigation(): void {
-    const mobileMenuToggle = document.querySelector('[data-mobile-menu-toggle]');
-    const mobileMenu = document.querySelector('[data-mobile-menu]');
-    const mobileLinks = mobileMenu?.querySelectorAll('a');
+    const menuTrigger = document.querySelector<HTMLButtonElement>('[data-menu-trigger]');
+    const dropdownMenu = document.querySelector<HTMLElement>('[data-dropdown-menu]');
+    const dropdownLinks = dropdownMenu?.querySelectorAll<HTMLAnchorElement>('.dropdown-link');
 
-    // Mobile menu toggle
-    if (mobileMenuToggle && mobileMenu) {
-      mobileMenuToggle.addEventListener('click', () => {
-        const isHidden = mobileMenu.classList.contains('hidden');
-        mobileMenu.classList.toggle('hidden', !isHidden);
-      });
+    if (!menuTrigger || !dropdownMenu) return;
 
-      // Close mobile menu when clicking on links
-      mobileLinks?.forEach(link => {
-        link.addEventListener('click', () => {
-          mobileMenu.classList.add('hidden');
-        });
-      });
+    const openMenu = () => {
+      dropdownMenu.classList.add('active');
+      dropdownMenu.setAttribute('aria-hidden', 'false');
+      menuTrigger.classList.add('active');
+    };
 
-      // Close mobile menu when clicking outside
-      document.addEventListener('click', (e: MouseEvent) => {
-        const target = e.target as Node;
-        if (!mobileMenuToggle.contains(target) && !mobileMenu.contains(target)) {
-          mobileMenu.classList.add('hidden');
-        }
+    const closeMenu = () => {
+      dropdownMenu.classList.remove('active');
+      dropdownMenu.setAttribute('aria-hidden', 'true');
+      menuTrigger.classList.remove('active');
+    };
+
+    // Toggle menu on trigger click
+    menuTrigger.addEventListener('click', (e: Event) => {
+      e.stopPropagation();
+      const isActive = dropdownMenu.classList.contains('active');
+      if (isActive) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    // Close menu when clicking a link
+    dropdownLinks?.forEach(link => {
+      link.addEventListener('click', () => {
+        closeMenu();
       });
-    }
+    });
+
+    // Close menu on escape key
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && dropdownMenu.classList.contains('active')) {
+        closeMenu();
+      }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e: Event) => {
+      if (!dropdownMenu.classList.contains('active')) return;
+
+      const target = e.target as HTMLElement;
+      const isInsideMenu = dropdownMenu.contains(target);
+      const isTrigger = menuTrigger.contains(target);
+
+      if (!isInsideMenu && !isTrigger) {
+        closeMenu();
+      }
+    });
   }
 
   /**
    * Initialize scroll effects
    */
   initScrollEffects(): void {
-    const nav = document.querySelector('.nav');
-
-    window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-
-      // Add shadow to nav when scrolled
-      if (scrollY > 100) {
-        nav?.classList.add('scrolled');
-      } else {
-        nav?.classList.remove('scrolled');
-      }
-    }, { passive: true });
+    // Scroll effects can be added here if needed
+    // Currently handled by section indicators
   }
 
   /**
