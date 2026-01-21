@@ -6,11 +6,11 @@
      KEYFRAMES
      ======================================== */
 
-  /* Gentle reveal animation for name */
+  /* Editorial reveal animation - slower, more refined */
   @keyframes gentle-reveal {
     0% {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(40px);
     }
     100% {
       opacity: 1;
@@ -42,47 +42,80 @@
     }
   }
 
+  /* Editorial slide in from left */
+  @keyframes slide-in-left {
+    0% {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Editorial slide in from right */
+  @keyframes slide-in-right {
+    0% {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
   /* ========================================
-     ANIMATION CLASSES
+     ANIMATION CLASSES - Editorial Refined
      ======================================== */
 
-  /* Name reveal with stagger */
+  /* Name reveal with stagger - snappier timing */
   .name-reveal {
     opacity: 0;
-    animation: gentle-reveal 1.2s var(--ease-out) forwards;
+    animation: gentle-reveal 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
   }
 
   .name-reveal-delay-1 {
-    animation-delay: 0.3s;
+    animation-delay: 0.2s;
   }
 
   .name-reveal-delay-2 {
-    animation-delay: 0.6s;
+    animation-delay: 0.4s;
   }
 
   /* Fade in */
   .fade-in {
-    animation: fade-in 0.8s var(--ease-out);
+    animation: fade-in 1s var(--ease-out);
   }
 
   .fade-in-slow {
-    animation: fade-in 1.2s var(--ease-out);
+    animation: fade-in 1.4s var(--ease-out);
   }
 
   /* Scale in */
   .scale-in {
-    animation: scale-in 0.6s var(--ease-out);
+    animation: scale-in 0.8s var(--ease-out);
+  }
+
+  /* Slide in animations */
+  .slide-in-left {
+    animation: slide-in-left 1s var(--ease-out);
+  }
+
+  .slide-in-right {
+    animation: slide-in-right 1s var(--ease-out);
   }
 
   /* ========================================
      INTERSECTION OBSERVER REVEALS
-     Applied via JavaScript
+     Applied via JavaScript - Editorial timing
      ======================================== */
   .reveal {
     opacity: 0;
-    transform: translateY(30px);
-    transition: opacity var(--transition-slower) var(--ease-out),
-                transform var(--transition-slower) var(--ease-out);
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+                transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .reveal.is-visible {
@@ -90,22 +123,38 @@
     transform: translateY(0);
   }
 
-  /* Stagger delays for multiple reveals */
+  /* Stagger delays for multiple reveals - slower for editorial feel */
   .reveal-delay-1 {
-    transition-delay: 100ms;
+    transition-delay: 150ms;
   }
 
   .reveal-delay-2 {
-    transition-delay: 200ms;
-  }
-
-  .reveal-delay-3 {
     transition-delay: 300ms;
   }
 
-  .reveal-delay-4 {
-    transition-delay: 400ms;
+  .reveal-delay-3 {
+    transition-delay: 450ms;
   }
+
+  .reveal-delay-4 {
+    transition-delay: 600ms;
+  }
+
+  /* Experience stagger animation */
+  .experience-item:nth-child(1).reveal { transition-delay: 0ms; }
+  .experience-item:nth-child(2).reveal { transition-delay: 100ms; }
+  .experience-item:nth-child(3).reveal { transition-delay: 200ms; }
+
+  /* Project row stagger animation */
+  .project-row:nth-child(1).reveal { transition-delay: 0ms; }
+  .project-row:nth-child(2).reveal { transition-delay: 100ms; }
+  .project-row:nth-child(3).reveal { transition-delay: 200ms; }
+  .project-row:nth-child(4).reveal { transition-delay: 300ms; }
+
+  /* Skills group stagger */
+  .skill-group:nth-child(1).reveal { transition-delay: 0ms; }
+  .skill-group:nth-child(2).reveal { transition-delay: 100ms; }
+  .skill-group:nth-child(3).reveal { transition-delay: 200ms; }
 
   /* ========================================
      HOVER ANIMATIONS

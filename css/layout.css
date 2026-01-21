@@ -1,9 +1,40 @@
 /* Layout System */
-/* Container queries, grid systems, and layout primitives */
+/* Framed Asymmetric Layout */
 
 @layer layout {
   /* ========================================
-     CONTAINER
+     FRAME SIZE TOKENS
+     ======================================== */
+  :root {
+    --frame-size: 12px;
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --frame-size: 16px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      --frame-size: 20px;
+    }
+  }
+
+  /* ========================================
+     MAIN CONTENT WRAPPER
+     ======================================== */
+  html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    /* No body padding - each section handles its own frame */
+  }
+
+  /* ========================================
+     CONTAINER - Simplified
      ======================================== */
   .container {
     width: 100%;
@@ -24,7 +55,6 @@
     padding-inline: var(--space-4);
   }
 
-  /* Responsive padding */
   @media (min-width: 640px) {
     .container,
     .container-wide,
@@ -34,27 +64,165 @@
   }
 
   /* ========================================
-     SECTIONS
+     FRAMED SECTIONS - Full Viewport Height
+     ======================================== */
+  .section-framed {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport for mobile */
+    display: flex;
+    align-items: stretch; /* Cards fill full height */
+    padding: var(--frame-size);
+    /* Scroll snapping */
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* The frame border - drawn via pseudo-element */
+  .section-framed::before {
+    content: '';
+    position: absolute;
+    inset: var(--frame-size);
+    border: 1px solid hsla(30, 10%, 70%, 0.4);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Left aligned card */
+  .section-framed.section-left {
+    justify-content: flex-start;
+  }
+
+  /* Right aligned card */
+  .section-framed.section-right {
+    justify-content: flex-end;
+  }
+
+  /* Full width card */
+  .section-framed.section-full {
+    justify-content: stretch;
+  }
+
+  /* ========================================
+     SECTION CARDS - Fill to Frame Edges
+     ======================================== */
+  .section-card {
+    background: hsla(30, 10%, 98%, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsla(30, 10%, 85%, 0.5);
+    padding: var(--space-6);
+    width: 100%;
+    /* Align to frame edges */
+    margin: 0;
+    /* Center content vertically */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media (min-width: 640px) {
+    .section-card {
+      padding: var(--space-8);
+    }
+  }
+
+  /* Desktop: Cards fill their side up to the frame */
+  @media (min-width: 1024px) {
+    .section-card {
+      padding: var(--space-8) var(--space-10);
+    }
+
+    /* Left card: touches left frame, extends ~55% */
+    .section-left .section-card {
+      width: 55%;
+      border-left: none;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    /* Right card: touches right frame, extends ~50% */
+    .section-right .section-card {
+      width: 50%;
+      border-right: none;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    /* Full width: touches both frame edges */
+    .section-full .section-card {
+      width: 100%;
+      border-left: none;
+      border-right: none;
+      border-radius: 0;
+    }
+  }
+
+  /* ========================================
+     HERO SECTION - Full viewport height
+     ======================================== */
+  .section-hero {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Mobile: reduce excessive top padding */
+  @media (max-width: 639px) {
+    .section-hero {
+      padding-block-start: var(--space-12);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .section-hero .section-card {
+      width: 58%;
+      border-left: none;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  /* ========================================
+     CONTACT SECTION - Full height, card at bottom 33%
+     ======================================== */
+  .section-contact {
+    min-height: 100vh;
+    min-height: 100dvh;
+    align-items: flex-end; /* Push card to bottom */
+  }
+
+  .section-contact .section-card {
+    height: calc(25vh - var(--frame-size));
+    height: calc(25dvh - var(--frame-size));
+    min-height: auto;
+    flex: none; /* Don't stretch */
+    padding-block: var(--space-8);
+    border-bottom: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    /* Center content vertically in the shorter card */
+    justify-content: center;
+  }
+
+  @media (min-width: 1024px) {
+    .section-contact .section-card {
+      padding-block: var(--space-12);
+    }
+  }
+
+  /* ========================================
+     LEGACY SECTION STYLES (fallback)
      ======================================== */
   .section {
-    padding-block: var(--space-12);
+    padding-block: var(--space-6);
     container-type: inline-size;
     container-name: section;
   }
 
   @media (min-width: 640px) {
     .section {
-      padding-block: var(--space-16);
+      padding-block: var(--space-8);
     }
-  }
-
-  .section-hero {
-    min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport height */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-block: var(--space-16);
   }
 
   .section-alternate {

@@ -59,6 +59,7 @@ class Portfolio {
     this.initScrollEffects();
     this.initRevealAnimations();
     this.initSmoothScroll();
+    this.initProjectToggles();
 
     // Handle window resize
     window.addEventListener('resize', () => this.handleResize());
@@ -178,11 +179,14 @@ class Portfolio {
       });
     }, {
       root: null,
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px'
+      threshold: 0.05,
+      rootMargin: '0px 0px 0px 0px'
     });
 
-    revealElements.forEach(el => observer.observe(el));
+    // Small delay to let CSS animations complete their initial state
+    requestAnimationFrame(() => {
+      revealElements.forEach(el => observer.observe(el));
+    });
   }
 
   /**
@@ -204,6 +208,36 @@ class Portfolio {
             behavior: 'smooth',
             block: 'start'
           });
+        }
+      });
+    });
+  }
+
+  /**
+   * Initialize project expand/collapse toggles
+   */
+  initProjectToggles(): void {
+    const projectToggles = document.querySelectorAll<HTMLButtonElement>('[data-project-toggle]');
+
+    projectToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const project = toggle.closest('[data-project]');
+        const details = project?.querySelector('[data-project-details]') as HTMLElement | null;
+
+        if (!project || !details) return;
+
+        const isExpanded = project.getAttribute('data-expanded') === 'true';
+
+        if (isExpanded) {
+          // Collapse
+          project.setAttribute('data-expanded', 'false');
+          toggle.setAttribute('aria-expanded', 'false');
+          details.hidden = true;
+        } else {
+          // Expand
+          project.setAttribute('data-expanded', 'true');
+          toggle.setAttribute('aria-expanded', 'true');
+          details.hidden = false;
         }
       });
     });

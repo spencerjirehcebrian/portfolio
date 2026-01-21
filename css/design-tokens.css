@@ -32,6 +32,8 @@
     --text-6xl: 4.768rem;  /* 76.3px */
 
     /* Font families */
+    --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-display: 'Cormorant Garamond', Georgia, serif;
     --font-mono: 'Anonymous Pro', Monaco, 'Courier New', monospace;
 
     /* Font weights */
