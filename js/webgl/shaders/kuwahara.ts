@@ -16,6 +16,9 @@ export const kuwaharaShader = {
     u_revealSoftness: { value: 0.1 },
     u_useDisplacement: { value: 1 },
     u_brightness: { value: 1.4 },
+    u_time: { value: 0.0 },
+    u_edgeDarkness: { value: 0.4 },     // How dark the water edge shadow is
+    u_distortionStrength: { value: 0.06 }, // Refraction intensity at edge
   },
 
   vertexShader: /* glsl */ `
@@ -39,6 +42,9 @@ export const kuwaharaShader = {
     uniform float u_revealSoftness;
     uniform int u_useDisplacement;
     uniform float u_brightness;
+    uniform float u_time;
+    uniform float u_edgeDarkness;
+    uniform float u_distortionStrength;
 
     varying vec2 vUv;
 
@@ -103,19 +109,35 @@ export const kuwaharaShader = {
     void main() {
       vec2 distortedUV = vUv;
       float reveal = 0.0;
+      float edgeFactor = 0.0;
 
       if (u_useDisplacement == 1) {
-        float height = texture2D(tDisplacement, vUv).r;
+        vec2 dispData = texture2D(tDisplacement, vUv).rg;
+        float height = dispData.r;
+        float velocity = dispData.g;
 
-        // Compute gradient for edge distortion
+        // Compute gradient for edge detection and distortion
         vec2 gradient = getDisplacementGradient(vUv);
+        float gradientMag = length(gradient);
 
-        // Distort UVs at edges (where gradient is strong)
-        float distortStrength = 0.04;
-        distortedUV += gradient * distortStrength;
+        // Soft reveal based on height with smoothstep transition
+        // -0.5 = fully revealed, -0.05 = fully filtered
+        reveal = smoothstep(-0.05, -0.5, height);
 
-        // Sharp reveal based on displacement
-        reveal = height < -0.1 ? 1.0 : 0.0;
+        // Edge factor: strongest where gradient is high (the "wall" of water)
+        // Also incorporate velocity for wave animation
+        edgeFactor = smoothstep(0.01, 0.15, gradientMag);
+
+        // Add subtle wave animation to edge using velocity
+        float waveOffset = velocity * 2.0;
+        edgeFactor *= (1.0 + waveOffset * 0.3);
+        edgeFactor = clamp(edgeFactor, 0.0, 1.0);
+
+        // Distortion: apply refraction at the transition zone
+        // Scale by gradient magnitude and edge factor for natural look
+        float distortAmount = u_distortionStrength * edgeFactor;
+        distortedUV += gradient * distortAmount;
+
       } else {
         // Fallback to circular reveal (mobile or disabled)
         float aspect = u_resolution.x / u_resolution.y;
@@ -125,9 +147,13 @@ export const kuwaharaShader = {
 
         reveal = 1.0 - smoothstep(u_revealRadius - u_revealSoftness,
                             u_revealRadius + u_revealSoftness, dist);
+
+        // Simple edge for mobile fallback
+        float edgeDist = abs(dist - u_revealRadius);
+        edgeFactor = 1.0 - smoothstep(0.0, u_revealSoftness * 2.0, edgeDist);
       }
 
-      // Sample colors with distorted UVs for water effect
+      // Sample colors with distorted UVs for water refraction effect
       vec3 unfilteredColor = texture2D(tDiffuse, distortedUV).rgb;
       vec3 filteredColor = kuwaharaFilter(distortedUV);
 
@@ -136,6 +162,11 @@ export const kuwaharaShader = {
 
       // Combine: reveal unfiltered where displaced, show filtered elsewhere
       vec3 finalColor = mix(filteredColor, unfilteredColor, reveal);
+
+      // Apply darkened edge (shadow of the water wall)
+      // Darken most at the edge transition zone
+      float darkness = edgeFactor * u_edgeDarkness * (1.0 - reveal * 0.5);
+      finalColor *= (1.0 - darkness);
 
       gl_FragColor = vec4(finalColor, 1.0);
     }

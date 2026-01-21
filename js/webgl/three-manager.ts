@@ -150,15 +150,17 @@ export class ThreeManager {
     this.displacementScene = new THREE.Scene();
     this.displacementCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-    // Create displacement material - ink diffusion model
+    // Create displacement material - ink diffusion + wave equation
     this.displacementMaterial = new THREE.ShaderMaterial({
       uniforms: {
         tPrevState: { value: null },
         u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
         u_prevMouse: { value: new THREE.Vector2(0.5, 0.5) },
-        u_brushSize: { value: 0.05 },
+        u_brushSize: { value: 0.035 },
         u_expandRate: { value: 0.4 },
         u_fillRate: { value: 0.08 },
+        u_waveSpeed: { value: 0.2 },
+        u_waveDamping: { value: 0.95 },
         u_isActive: { value: 0.0 },
         u_moveIntensity: { value: 0.0 },
         u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
@@ -294,6 +296,9 @@ export class ThreeManager {
         u_revealSoftness: { value: 0.1 },
         u_useDisplacement: { value: this.isMobile ? 0 : 1 },
         u_brightness: { value: 1.4 },
+        u_time: { value: 0.0 },
+        u_edgeDarkness: { value: 0.4 },
+        u_distortionStrength: { value: 0.06 },
       },
       vertexShader: kuwaharaShader.vertexShader,
       fragmentShader: kuwaharaShader.fragmentShader,
@@ -363,6 +368,7 @@ export class ThreeManager {
   updateTime(time: number): void {
     this.noiseMaterial.uniforms.u_time.value = time;
     this.displacementMaterial.uniforms.u_time.value = time;
+    this.kuwaharaPass.uniforms.u_time.value = time;
   }
 
   /**
