@@ -55,12 +55,91 @@
         transition: none;
       }
     }
+
+    /* Mobile Warning Overlay */
+    .mobile-warning {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mobile-warning.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-warning-content {
+      max-width: 20rem;
+      text-align: center;
+    }
+
+    .mobile-warning-title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.125rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: hsl(210, 15%, 10%);
+      margin: 0 0 1rem;
+    }
+
+    .mobile-warning-message {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.6;
+      color: hsl(210, 8%, 45%);
+      margin: 0 0 1.5rem;
+    }
+
+    .mobile-warning-btn {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: hsl(210, 15%, 10%);
+      background: transparent;
+      border: 1px solid hsl(210, 8%, 45%);
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      transition: border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                  color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mobile-warning-btn:hover,
+    .mobile-warning-btn:focus {
+      border-color: hsl(210, 15%, 10%);
+      outline: none;
+    }
+
+    .mobile-warning-btn:active {
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body data-loading>
   <!-- Loading Screen -->
   <div class="site-loader" aria-live="polite" aria-label="Loading portfolio">
     <span class="loader-text">Loading</span>
+
+    <!-- Mobile Warning (hidden by default, shown via JS) -->
+    <div class="mobile-warning" aria-hidden="true">
+      <div class="mobile-warning-content">
+        <h2 class="mobile-warning-title">Best viewed on desktop</h2>
+        <p class="mobile-warning-message">
+          For the best experience, please visit on a laptop or desktop computer.
+        </p>
+        <button class="mobile-warning-btn" type="button">Continue anyway</button>
+      </div>
+    </div>
   </div>
 
   <!-- WebGL Canvas Background -->

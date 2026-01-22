@@ -246,9 +246,12 @@ export class ThreeManager {
           texture.minFilter = THREE.LinearFilter;
           texture.magFilter = THREE.LinearFilter;
           this.imageTexture = texture;
-          // Update the material with the loaded texture
+          // Update the material with the loaded texture and its aspect ratio
           if (this.noiseMaterial) {
             this.noiseMaterial.uniforms.u_image.value = texture;
+            // Calculate actual aspect ratio from loaded image dimensions
+            const imageAspect = texture.image.width / texture.image.height;
+            this.noiseMaterial.uniforms.u_imageAspect.value = imageAspect;
           }
           resolve(texture);
         },
@@ -273,6 +276,7 @@ export class ThreeManager {
         u_color1: { value: new THREE.Vector3(0.9, 0.9, 0.9) },
         u_color2: { value: new THREE.Vector3(0.7, 0.7, 0.7) },
         u_image: { value: this.imageTexture },
+        u_imageAspect: { value: 1.0 }, // Dynamically set when image loads
         u_useImage: { value: 1 }, // 1 = use image, 0 = use voronoi
       },
       vertexShader: proceduralGradientShader.vertexShader,

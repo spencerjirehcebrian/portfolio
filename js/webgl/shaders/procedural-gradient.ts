@@ -11,6 +11,7 @@ export const proceduralGradientShader = {
     u_color1: { value: null },
     u_color2: { value: null },
     u_image: { value: null },
+    u_imageAspect: { value: 1.0 }, // Dynamically set from loaded texture
     u_useImage: { value: 1 }, // 1 = use image, 0 = use voronoi
   },
 
@@ -33,6 +34,7 @@ export const proceduralGradientShader = {
     uniform vec3 u_color1;
     uniform vec3 u_color2;
     uniform sampler2D u_image;
+    uniform float u_imageAspect;
     uniform int u_useImage;
 
     // ============================================
@@ -97,8 +99,8 @@ export const proceduralGradientShader = {
     // ============================================
 
     vec3 getImageColor(vec2 uv) {
-      // Image aspect ratio (The Hay Wain is ~1.45 landscape)
-      float imageAspect = 1.45;
+      // Image aspect ratio (dynamically set from loaded texture)
+      float imageAspect = u_imageAspect;
       float screenAspect = u_resolution.x / u_resolution.y;
 
       vec2 scale = vec2(1.0);

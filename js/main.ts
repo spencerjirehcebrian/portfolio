@@ -28,11 +28,77 @@ class LoadingManager {
   private startTime: number;
   private prefersReducedMotion: boolean;
 
+  // Mobile warning elements and config
+  private loaderText: HTMLElement | null;
+  private mobileWarning: HTMLElement | null;
+  private mobileWarningBtn: HTMLElement | null;
+  private static readonly MOBILE_WARNING_KEY = 'portfolio-mobile-warning-dismissed';
+  private static readonly PHONE_THRESHOLD = 480; // px - smaller dimension threshold for phones
+
   constructor() {
     this.loader = document.querySelector('.site-loader');
+    this.loaderText = document.querySelector('.loader-text');
+    this.mobileWarning = document.querySelector('.mobile-warning');
+    this.mobileWarningBtn = document.querySelector('.mobile-warning-btn');
     this.body = document.body;
     this.startTime = performance.now();
     this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /**
+   * Check if device is a phone based on screen dimensions
+   * Uses the smaller dimension to catch both portrait and landscape orientations
+   */
+  private isPhone(): boolean {
+    const smallerDimension = Math.min(window.innerWidth, window.innerHeight);
+    return smallerDimension < LoadingManager.PHONE_THRESHOLD;
+  }
+
+  /**
+   * Check if user has previously dismissed the mobile warning
+   */
+  private wasWarningDismissed(): boolean {
+    try {
+      return localStorage.getItem(LoadingManager.MOBILE_WARNING_KEY) === 'true';
+    } catch {
+      // localStorage not available
+      return false;
+    }
+  }
+
+  /**
+   * Save warning dismissal to localStorage
+   */
+  private saveWarningDismissal(): void {
+    try {
+      localStorage.setItem(LoadingManager.MOBILE_WARNING_KEY, 'true');
+    } catch {
+      // localStorage not available, continue anyway
+    }
+  }
+
+  /**
+   * Show mobile warning and set up dismissal handler
+   */
+  private showMobileWarning(onDismiss: () => void): void {
+    if (!this.mobileWarning || !this.mobileWarningBtn || !this.loaderText) {
+      onDismiss();
+      return;
+    }
+
+    // Hide loading text, show warning
+    this.loaderText.style.display = 'none';
+    this.mobileWarning.classList.add('is-visible');
+    this.mobileWarning.setAttribute('aria-hidden', 'false');
+
+    // Handle dismissal
+    const handleDismiss = (): void => {
+      this.saveWarningDismissal();
+      this.mobileWarningBtn?.removeEventListener('click', handleDismiss);
+      onDismiss();
+    };
+
+    this.mobileWarningBtn.addEventListener('click', handleDismiss);
   }
 
   /**
@@ -90,9 +156,9 @@ class LoadingManager {
   }
 
   /**
-   * Hide loader and reveal content
+   * Hide loader and reveal content (internal method)
    */
-  reveal(): void {
+  private doReveal(): void {
     if (this.prefersReducedMotion) {
       // Instant reveal for reduced motion preference
       this.loader?.classList.add('is-hidden');
@@ -105,6 +171,18 @@ class LoadingManager {
       this.body.removeAttribute('data-loading');
       // Remove loader from DOM after transition completes
       setTimeout(() => this.loader?.remove(), 600);
+    }
+  }
+
+  /**
+   * Handle loading completion - check for phone and show warning if needed
+   */
+  reveal(): void {
+    // Check if phone and warning not previously dismissed
+    if (this.isPhone() && !this.wasWarningDismissed()) {
+      this.showMobileWarning(() => this.doReveal());
+    } else {
+      this.doReveal();
     }
   }
 }
