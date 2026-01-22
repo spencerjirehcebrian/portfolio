@@ -38,6 +38,9 @@ export class ThreeManager {
   // Paper texture
   paperTexture: THREE.DataTexture;
 
+  // Placeholder texture for mobile (prevents null sampler issues)
+  placeholderTexture: THREE.DataTexture;
+
   // Test image texture (temporary for Kuwahara testing)
   imageTexture: THREE.Texture | null = null;
 
@@ -87,6 +90,9 @@ export class ThreeManager {
     // Generate paper texture
     this.paperTexture = this.createPaperTexture();
 
+    // Create placeholder texture for mobile (prevents null sampler issues)
+    this.placeholderTexture = this.createPlaceholderTexture();
+
     // Initialize displacement buffers for water effect
     this.initDisplacementBuffers();
 
@@ -110,6 +116,16 @@ export class ThreeManager {
 
     // Initial resize
     this.resize();
+  }
+
+  /**
+   * Create 1x1 placeholder texture (prevents null sampler issues on mobile)
+   */
+  createPlaceholderTexture(): THREE.DataTexture {
+    const data = new Uint8Array([0, 0, 0, 255]); // 1x1 black pixel
+    const texture = new THREE.DataTexture(data, 1, 1, THREE.RGBAFormat);
+    texture.needsUpdate = true;
+    return texture;
   }
 
   /**
@@ -258,7 +274,11 @@ export class ThreeManager {
         undefined,
         (error) => {
           console.warn('Failed to load background image:', error);
-          resolve(null); // Graceful degradation - fall back to Voronoi
+          // Fall back to Voronoi mode when image fails to load
+          if (this.noiseMaterial) {
+            this.noiseMaterial.uniforms.u_useImage.value = 0;
+          }
+          resolve(null);
         }
       );
     });
@@ -302,7 +322,7 @@ export class ThreeManager {
         tDiffuse: { value: null },
         tDisplacement: { value: null },
         u_resolution: { value: new THREE.Vector2() },
-        u_kernelSize: { value: this.isMobile ? 4 : 8 },
+        u_kernelSize: { value: 8 },
         u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
         u_revealRadius: { value: 0.15 },
         u_revealSoftness: { value: 0.1 },
@@ -411,6 +431,10 @@ export class ThreeManager {
       const displacementTexture = this.getDisplacementTexture();
       this.kuwaharaPass.uniforms.tDisplacement.value = displacementTexture;
       this.watercolorPass.uniforms.tDisplacement.value = displacementTexture;
+    } else {
+      // Mobile: use placeholder texture to prevent null sampler issues
+      this.kuwaharaPass.uniforms.tDisplacement.value = this.placeholderTexture;
+      this.watercolorPass.uniforms.tDisplacement.value = this.placeholderTexture;
     }
 
     // Render main scene through post-processing
@@ -424,6 +448,7 @@ export class ThreeManager {
     this.noiseMaterial.dispose();
     this.noiseMesh.geometry.dispose();
     this.paperTexture.dispose();
+    this.placeholderTexture.dispose();
     if (this.imageTexture) {
       this.imageTexture.dispose();
     }

@@ -40,7 +40,7 @@ export const kuwaharaShader = {
     uniform vec2 u_mouse;
     uniform float u_revealRadius;
     uniform float u_revealSoftness;
-    uniform int u_useDisplacement;
+    uniform float u_useDisplacement;
     uniform float u_brightness;
     uniform float u_time;
     uniform float u_edgeDarkness;
@@ -111,7 +111,7 @@ export const kuwaharaShader = {
       float reveal = 0.0;
       float edgeFactor = 0.0;
 
-      if (u_useDisplacement == 1) {
+      if (u_useDisplacement > 0.5) {
         vec2 dispData = texture2D(tDisplacement, vUv).rg;
         float height = dispData.r;
         float velocity = dispData.g;
@@ -139,18 +139,9 @@ export const kuwaharaShader = {
         distortedUV += gradient * distortAmount;
 
       } else {
-        // Fallback to circular reveal (mobile or disabled)
-        float aspect = u_resolution.x / u_resolution.y;
-        vec2 correctedUV = vec2(vUv.x * aspect, vUv.y);
-        vec2 correctedMouse = vec2(u_mouse.x * aspect, u_mouse.y);
-        float dist = length(correctedUV - correctedMouse);
-
-        reveal = 1.0 - smoothstep(u_revealRadius - u_revealSoftness,
-                            u_revealRadius + u_revealSoftness, dist);
-
-        // Simple edge for mobile fallback
-        float edgeDist = abs(dist - u_revealRadius);
-        edgeFactor = 1.0 - smoothstep(0.0, u_revealSoftness * 2.0, edgeDist);
+        // Mobile: no reveal effect, just show filtered image everywhere
+        reveal = 0.0;
+        edgeFactor = 0.0;
       }
 
       // Sample colors with distorted UVs for water refraction effect

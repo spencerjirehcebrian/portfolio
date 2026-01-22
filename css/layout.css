@@ -99,6 +99,16 @@
     .section-framed {
       min-height: auto; /* Allow natural content height on mobile */
     }
+
+    /* Add spacing between sections on mobile (exclude projects zone which flows together) */
+    .section-framed:not(.section-contact):not(.section-projects-index):not(.section-project) {
+      margin-block-end: var(--space-6);
+    }
+
+    /* Gap before contact section */
+    .section-contact {
+      margin-block-start: var(--space-6);
+    }
   }
 
   /* The frame border - drawn via pseudo-element */

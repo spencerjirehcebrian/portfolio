@@ -1567,6 +1567,63 @@
   }
 
   /* ========================================
+     PROJECT ACCORDION - Mobile
+     ======================================== */
+  @media (max-width: 1023px) {
+    .project-article {
+      cursor: pointer;
+      position: relative;
+    }
+
+    /* Expand indicator (+/-) */
+    .project-article-header::after {
+      content: '+';
+      position: absolute;
+      right: var(--space-3);
+      top: 0;
+      font-family: var(--font-mono);
+      font-size: var(--text-lg);
+      color: var(--text-tertiary);
+      transition: transform var(--transition-base);
+    }
+
+    .project-article.is-expanded .project-article-header::after {
+      content: '-';
+    }
+
+    /* Teaser (shown when collapsed) */
+    .project-teaser {
+      font-family: var(--font-serif);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: var(--leading-relaxed);
+      margin: 0;
+      margin-block-start: var(--space-3);
+    }
+
+    .project-article.is-expanded .project-teaser {
+      display: none;
+    }
+
+    /* Hide content when collapsed */
+    .project-meta-mobile,
+    .project-article-content {
+      display: none;
+    }
+
+    .project-article.is-expanded .project-meta-mobile,
+    .project-article.is-expanded .project-article-content {
+      display: block;
+      animation: projectAccordionIn 300ms var(--ease-out);
+    }
+  }
+
+  @keyframes projectAccordionIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ========================================
      PROJECT NAVIGATION - Side Nav (Desktop)
      ======================================== */
   .project-side-nav {

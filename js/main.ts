@@ -239,6 +239,7 @@ class Portfolio {
     this.initSmoothScroll();
     this.initProjectToggles();
     this.initProjectNavigation();
+    this.initProjectAccordion();
     this.initExperiencePanel();
     this.initSkillsInteraction();
 
@@ -284,6 +285,7 @@ class Portfolio {
       } else if (this.threeManager.webglVersion === 1) {
         console.log('Using WebGL 1.0 with Three.js watercolor effect');
       }
+      console.log('Mobile mode:', this.threeManager.isMobile);
 
       // Initialize scene controller
       this.sceneController = new SceneController(this.threeManager);
@@ -558,7 +560,93 @@ class Portfolio {
         const section = document.querySelector(`[data-project-section="${target}"]`);
         if (section) {
           section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          // On mobile, auto-expand the project accordion after scrolling
+          if (window.innerWidth < 1024) {
+            setTimeout(() => {
+              const projectArticle = section.querySelector<HTMLElement>('[data-project-article]');
+              if (projectArticle && !projectArticle.classList.contains('is-expanded')) {
+                projectArticle.click();
+              }
+            }, 400); // Wait for scroll to complete
+          }
         }
+      });
+    });
+  }
+
+  /**
+   * Initialize project accordion for mobile
+   * Collapsed: shows teaser; Expanded: shows full content
+   * Single-item-expanded-at-a-time pattern
+   */
+  initProjectAccordion(): void {
+    const projectArticles = document.querySelectorAll<HTMLElement>('[data-project-article]');
+
+    if (projectArticles.length === 0) return;
+
+    // Helper: Extract first sentence from description
+    const getFirstSentence = (text: string): string => {
+      const match = text.match(/^[^.!?]+[.!?]/);
+      return match ? match[0].trim() : text.slice(0, 100) + '...';
+    };
+
+    // Create teaser elements for each project
+    projectArticles.forEach(article => {
+      const description = article.querySelector('.project-description');
+      if (!description) return;
+
+      // Extract teaser text (first sentence)
+      const fullText = description.textContent || '';
+      const teaserText = getFirstSentence(fullText);
+
+      // Create teaser element
+      const teaser = document.createElement('p');
+      teaser.className = 'project-teaser';
+      teaser.textContent = teaserText;
+
+      // Insert teaser after header
+      const header = article.querySelector('.project-article-header');
+      if (header) {
+        header.insertAdjacentElement('afterend', teaser);
+      }
+    });
+
+    // Toggle accordion on click
+    const toggleAccordion = (article: HTMLElement): void => {
+      const isExpanded = article.classList.contains('is-expanded');
+
+      // Collapse all others (single-item-expanded pattern)
+      projectArticles.forEach(other => {
+        if (other !== article) {
+          other.classList.remove('is-expanded');
+        }
+      });
+
+      // Toggle current
+      if (isExpanded) {
+        article.classList.remove('is-expanded');
+      } else {
+        article.classList.add('is-expanded');
+
+        // Scroll into view after expansion animation
+        setTimeout(() => {
+          article.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    };
+
+    // Click handler for each article
+    projectArticles.forEach(article => {
+      article.addEventListener('click', (e: MouseEvent) => {
+        // Skip toggle if clicking a link
+        const target = e.target as HTMLElement;
+        if (target.closest('a')) return;
+
+        // Only toggle on mobile (< 1024px)
+        if (window.innerWidth >= 1024) return;
+
+        toggleAccordion(article);
       });
     });
   }

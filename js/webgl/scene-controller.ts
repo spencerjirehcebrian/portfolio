@@ -184,11 +184,17 @@ export class SceneController {
 
   /**
    * Set up mouse tracking (controls Kuwahara reveal)
+   * Disabled entirely on mobile - no mouse or touch interaction
    */
   setupMouseTracking(): void {
+    // Skip all mouse/touch tracking on mobile
+    if (this.threeManager.isMobile) return;
+
     let rafId: number | null = null;
 
     const updateMouse = (e: MouseEvent): void => {
+      // Double-check mobile flag in case of synthetic touch events
+      if (this.threeManager.isMobile) return;
       if (rafId) return;
 
       rafId = requestAnimationFrame(() => {
@@ -200,18 +206,18 @@ export class SceneController {
     };
 
     const handleMouseEnter = (): void => {
+      if (this.threeManager.isMobile) return;
       this.isMouseActive = true;
     };
 
     const handleMouseLeave = (): void => {
+      if (this.threeManager.isMobile) return;
       this.isMouseActive = false;
     };
 
-    if (!this.threeManager.isMobile) {
-      window.addEventListener('mousemove', updateMouse, { passive: true });
-      document.addEventListener('mouseenter', handleMouseEnter, { passive: true });
-      document.addEventListener('mouseleave', handleMouseLeave, { passive: true });
-    }
+    window.addEventListener('mousemove', updateMouse, { passive: true });
+    document.addEventListener('mouseenter', handleMouseEnter, { passive: true });
+    document.addEventListener('mouseleave', handleMouseLeave, { passive: true });
   }
 
   /**
