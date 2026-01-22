@@ -17,9 +17,102 @@ declare global {
   }
 }
 
+/**
+ * LoadingManager - Orchestrates asset loading and controls loader visibility
+ */
+class LoadingManager {
+  private loader: HTMLElement | null;
+  private body: HTMLElement;
+  private timeout = 8000; // 8 second max wait
+  private minDisplayTime = 300; // Minimum loader display time (prevents flash on cached loads)
+  private startTime: number;
+  private prefersReducedMotion: boolean;
+
+  constructor() {
+    this.loader = document.querySelector('.site-loader');
+    this.body = document.body;
+    this.startTime = performance.now();
+    this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /**
+   * Wait for all critical assets to load
+   */
+  async waitForAssets(threeManager: ThreeManager | null): Promise<void> {
+    const promises: Promise<unknown>[] = [
+      document.fonts.ready,
+      this.waitForFirstFrame(),
+    ];
+
+    // Wait for background image if WebGL is enabled
+    if (threeManager) {
+      promises.push(threeManager.imageLoaded);
+    }
+
+    // Race between all assets loading and timeout
+    await Promise.race([
+      Promise.all(promises),
+      this.timeoutPromise(),
+    ]);
+
+    // Ensure minimum display time to prevent jarring flash on cached loads
+    await this.ensureMinDisplayTime();
+  }
+
+  /**
+   * Wait for first frame to render (ensures GPU has compiled shaders)
+   */
+  private waitForFirstFrame(): Promise<void> {
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+  }
+
+  /**
+   * Timeout fallback to prevent infinite loading
+   */
+  private timeoutPromise(): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, this.timeout));
+  }
+
+  /**
+   * Ensure loader is displayed for minimum time to prevent flash
+   */
+  private async ensureMinDisplayTime(): Promise<void> {
+    const elapsed = performance.now() - this.startTime;
+    const remaining = this.minDisplayTime - elapsed;
+
+    if (remaining > 0 && !this.prefersReducedMotion) {
+      await new Promise((resolve) => setTimeout(resolve, remaining));
+    }
+  }
+
+  /**
+   * Hide loader and reveal content
+   */
+  reveal(): void {
+    if (this.prefersReducedMotion) {
+      // Instant reveal for reduced motion preference
+      this.loader?.classList.add('is-hidden');
+      this.body.removeAttribute('data-loading');
+      // Remove loader from DOM after hiding
+      setTimeout(() => this.loader?.remove(), 0);
+    } else {
+      // Animated reveal
+      this.loader?.classList.add('is-hidden');
+      this.body.removeAttribute('data-loading');
+      // Remove loader from DOM after transition completes
+      setTimeout(() => this.loader?.remove(), 600);
+    }
+  }
+}
+
 class Portfolio {
   threeManager: ThreeManager | null = null;
   sceneController: SceneController | null = null;
+  loadingManager: LoadingManager | null = null;
   themeInitialized: boolean = false;
 
   constructor() {
@@ -40,7 +133,10 @@ class Portfolio {
   /**
    * Setup all components
    */
-  setup(): void {
+  async setup(): Promise<void> {
+    // Initialize loading manager
+    this.loadingManager = new LoadingManager();
+
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -54,7 +150,11 @@ class Portfolio {
       }
     }
 
-    // Initialize UI components
+    // Wait for all assets to load before revealing content
+    await this.loadingManager.waitForAssets(this.threeManager);
+    this.loadingManager.reveal();
+
+    // Initialize UI components after reveal
     this.initNavigation();
     this.initScrollEffects();
     this.initRevealAnimations();

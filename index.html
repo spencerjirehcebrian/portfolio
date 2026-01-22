@@ -10,8 +10,59 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+
+  <!-- Critical CSS for loading screen (inlined to prevent FOUC) -->
+  <style>
+    /* Loading state - hide content until ready */
+    body[data-loading] > *:not(.site-loader) {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Loader overlay - use 100vw to include scrollbar area, preventing shift */
+    .site-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: hsl(30, 10%, 98%);
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .site-loader.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* System font text (no web font dependency) */
+    .loader-text {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 0.875rem;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: hsl(210, 8%, 45%);
+    }
+
+    /* Reduced motion: disable animations */
+    @media (prefers-reduced-motion: reduce) {
+      .site-loader {
+        transition: none;
+      }
+    }
+  </style>
 </head>
-<body>
+<body data-loading>
+  <!-- Loading Screen -->
+  <div class="site-loader" aria-live="polite" aria-label="Loading portfolio">
+    <span class="loader-text">Loading</span>
+  </div>
+
   <!-- WebGL Canvas Background -->
   <canvas id="webgl-canvas" class="webgl-canvas"></canvas>
 
@@ -40,7 +91,7 @@
           </h1>
 
           <p class="hero-title name-reveal name-reveal-delay-1">
-            Fullstack Developer & Software Engineer
+            Full Stack Developer & Software Engineer
           </p>
         </div>
 

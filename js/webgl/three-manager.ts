@@ -41,6 +41,9 @@ export class ThreeManager {
   // Test image texture (temporary for Kuwahara testing)
   imageTexture: THREE.Texture | null = null;
 
+  // Promise that resolves when background image loads (or fails gracefully)
+  readonly imageLoaded: Promise<THREE.Texture | null>;
+
   // Displacement ping-pong buffers
   displacementTargetA!: THREE.WebGLRenderTarget;
   displacementTargetB!: THREE.WebGLRenderTarget;
@@ -87,8 +90,8 @@ export class ThreeManager {
     // Initialize displacement buffers for water effect
     this.initDisplacementBuffers();
 
-    // Load test image for Kuwahara filter testing
-    this.loadTestImage();
+    // Load test image for Kuwahara filter testing (Promise-based for loading screen)
+    this.imageLoaded = this.loadTestImage();
 
     // Create noise plane
     this.noiseMaterial = this.createNoiseMaterial();
@@ -228,30 +231,34 @@ export class ThreeManager {
   }
 
   /**
-   * Load test image for Kuwahara filter testing (temporary)
-   * Set USE_IMAGE to true to use image, false to use Voronoi
+   * Load test image for Kuwahara filter testing
+   * Returns a Promise that resolves with the texture, or null on failure
    */
-  loadTestImage(): void {
-    const loader = new THREE.TextureLoader();
-    // Constable's "The Hay Wain" - public domain landscape painting
-    const imageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/John_Constable_The_Hay_Wain.jpg/1280px-John_Constable_The_Hay_Wain.jpg';
+  loadTestImage(): Promise<THREE.Texture | null> {
+    return new Promise((resolve) => {
+      const loader = new THREE.TextureLoader();
+      // Constable's "The Hay Wain" - public domain landscape painting
+      const imageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/John_Constable_The_Hay_Wain.jpg/1280px-John_Constable_The_Hay_Wain.jpg';
 
-    loader.load(
-      imageUrl,
-      (texture) => {
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        this.imageTexture = texture;
-        // Update the material with the loaded texture
-        if (this.noiseMaterial) {
-          this.noiseMaterial.uniforms.u_image.value = texture;
+      loader.load(
+        imageUrl,
+        (texture) => {
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+          this.imageTexture = texture;
+          // Update the material with the loaded texture
+          if (this.noiseMaterial) {
+            this.noiseMaterial.uniforms.u_image.value = texture;
+          }
+          resolve(texture);
+        },
+        undefined,
+        (error) => {
+          console.warn('Failed to load background image:', error);
+          resolve(null); // Graceful degradation - fall back to Voronoi
         }
-      },
-      undefined,
-      (error) => {
-        console.warn('Failed to load test image:', error);
-      }
-    );
+      );
+    });
   }
 
   /**
