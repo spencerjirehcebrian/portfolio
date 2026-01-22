@@ -60,6 +60,7 @@ class Portfolio {
     this.initRevealAnimations();
     this.initSmoothScroll();
     this.initProjectToggles();
+    this.initProjectNavigation();
     this.initExperiencePanel();
     this.initSkillsInteraction();
 
@@ -259,6 +260,126 @@ class Portfolio {
           project.setAttribute('data-expanded', 'true');
           toggle.setAttribute('aria-expanded', 'true');
           details.hidden = false;
+        }
+      });
+    });
+  }
+
+  /**
+   * Initialize project section navigation
+   * Shows/hides nav elements when in project zone
+   * Manages active states and click handlers
+   */
+  initProjectNavigation(): void {
+    const sideNav = document.querySelector<HTMLElement>('[data-project-nav]');
+    const dotsNav = document.querySelector<HTMLElement>('[data-project-dots]');
+    const projectSections = document.querySelectorAll<HTMLElement>('[data-project-section]');
+    const sideNavItems = sideNav?.querySelectorAll<HTMLAnchorElement>('[data-nav-target]');
+    const dotButtons = dotsNav?.querySelectorAll<HTMLButtonElement>('[data-dot-target]');
+
+    if (!sideNav || !dotsNav || projectSections.length === 0) return;
+
+    let currentProjectNum: string | null = null;
+
+    // Update active states on navigation elements
+    const setActiveProject = (projectNum: string | null): void => {
+      currentProjectNum = projectNum;
+
+      // Update side nav items
+      sideNavItems?.forEach(item => {
+        const target = item.getAttribute('data-nav-target');
+        if (target === projectNum) {
+          item.classList.add('is-active');
+        } else {
+          item.classList.remove('is-active');
+        }
+      });
+
+      // Update dot buttons
+      dotButtons?.forEach(dot => {
+        const target = dot.getAttribute('data-dot-target');
+        if (target === projectNum) {
+          dot.classList.add('is-active');
+        } else {
+          dot.classList.remove('is-active');
+        }
+      });
+    };
+
+    // Show/hide navigation based on whether we're in project zone
+    const setNavVisibility = (visible: boolean): void => {
+      if (visible) {
+        sideNav.classList.add('is-visible');
+        dotsNav.classList.add('is-visible');
+      } else {
+        sideNav.classList.remove('is-visible');
+        dotsNav.classList.remove('is-visible');
+      }
+    };
+
+    // Intersection Observer for project sections - shows nav only on individual projects
+    const projectObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const projectNum = entry.target.getAttribute('data-project-section');
+          if (projectNum) {
+            setActiveProject(projectNum);
+            setNavVisibility(true);
+          }
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '-50% 0px -50% 0px',
+      threshold: 0
+    });
+
+    // Observer for sections that should hide the nav (all non-individual-project sections)
+    const hideNavSections = [
+      document.getElementById('hero'),
+      document.getElementById('experience'),
+      document.getElementById('skills'),
+      document.getElementById('projects-index'),
+      document.getElementById('contact')
+    ].filter(Boolean) as HTMLElement[];
+
+    const hideNavObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Hide nav when on non-project sections
+          setNavVisibility(false);
+          setActiveProject(null);
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '-50% 0px -50% 0px',
+      threshold: 0
+    });
+
+    // Start observing
+    projectSections.forEach(section => projectObserver.observe(section));
+    hideNavSections.forEach(section => hideNavObserver.observe(section));
+
+    // Click handlers for side nav
+    sideNavItems?.forEach(item => {
+      item.addEventListener('click', (e: MouseEvent) => {
+        e.preventDefault();
+        const target = item.getAttribute('data-nav-target');
+        const section = document.querySelector(`[data-project-section="${target}"]`);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Click handlers for dots nav
+    dotButtons?.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const target = dot.getAttribute('data-dot-target');
+        const section = document.querySelector(`[data-project-section="${target}"]`);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
     });

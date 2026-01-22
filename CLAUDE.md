@@ -71,6 +71,3 @@ Shaders are TypeScript modules exporting `{ vertexShader, fragmentShader }` obje
 
 Docker multi-stage build: Node.js builder -> Nginx Alpine serving from `/usr/share/nginx/html`.
 
-## Technical Specification
-
-See `spec.md` for detailed watercolor effect documentation including shader pipeline diagrams, performance optimizations, and section color definitions.

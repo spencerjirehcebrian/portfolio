@@ -324,6 +324,23 @@
   }
 
   /* ========================================
+     PROJECT SECTIONS - Layout Overrides
+     Full width card with golden ratio inside
+     ======================================== */
+  .section-project {
+    justify-content: stretch;
+  }
+
+  @media (min-width: 1024px) {
+    .section-project .section-card {
+      width: 100%;
+      border-left: none;
+      border-right: none;
+      border-radius: 0;
+    }
+  }
+
+  /* ========================================
      LEGACY SECTION STYLES (fallback)
      ======================================== */
   .section {

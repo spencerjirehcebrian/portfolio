@@ -100,6 +100,26 @@ export class SceneController {
         color1: this.hslToRgb(140, 12, 85),
         color2: this.hslToRgb(140, 18, 72)
       },
+      'projects-index': {
+        color1: this.hslToRgb(140, 12, 87),
+        color2: this.hslToRgb(140, 16, 74)
+      },
+      'project-1': {
+        color1: this.hslToRgb(145, 14, 85),
+        color2: this.hslToRgb(145, 20, 70)
+      },
+      'project-2': {
+        color1: this.hslToRgb(135, 12, 86),
+        color2: this.hslToRgb(135, 18, 71)
+      },
+      'project-3': {
+        color1: this.hslToRgb(150, 13, 84),
+        color2: this.hslToRgb(150, 19, 69)
+      },
+      'project-4': {
+        color1: this.hslToRgb(130, 11, 86),
+        color2: this.hslToRgb(130, 17, 72)
+      },
       contact: {
         color1: this.hslToRgb(210, 15, 90),
         color2: this.hslToRgb(210, 20, 70)

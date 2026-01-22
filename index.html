@@ -26,7 +26,7 @@
     <a href="#hero" class="dropdown-link">Home</a>
     <a href="#experience" class="dropdown-link">Experience</a>
     <a href="#skills" class="dropdown-link">Tech Stack</a>
-    <a href="#projects" class="dropdown-link">Projects</a>
+    <a href="#projects-index" class="dropdown-link">Projects</a>
     <a href="#contact" class="dropdown-link">Contact</a>
   </nav>
 
@@ -47,7 +47,7 @@
         <nav class="hero-index name-reveal name-reveal-delay-2">
           <a href="#experience" class="hero-index-link"><span class="hero-index-num">01</span> Experience</a>
           <a href="#skills" class="hero-index-link"><span class="hero-index-num">02</span> Tech Stack</a>
-          <a href="#projects" class="hero-index-link"><span class="hero-index-num">03</span> Projects</a>
+          <a href="#projects-index" class="hero-index-link"><span class="hero-index-num">03</span> Projects</a>
           <a href="#contact" class="hero-index-link"><span class="hero-index-num">04</span> Contact</a>
         </nav>
 
@@ -301,46 +301,336 @@
     </div>
   </section>
 
-  <!-- Projects Section - Right Card -->
-  <section id="projects" class="section-framed section-right">
+  <!-- Projects Index Section -->
+  <section id="projects-index" class="section-framed section-right section-projects-index">
     <div class="section-card">
-      <h2 class="section-heading">Projects</h2>
-
-      <div class="projects-compact">
-        <article class="project-row reveal" data-project>
-          <div class="project-row-header" data-project-toggle>
-            <h3 class="project-row-title">Quantum Cash</h3>
-            <span class="project-row-tag">Microservices</span>
-          </div>
-          <p class="project-row-desc">Digital wallet system with microservices for user management, secure JWT auth, and PostgreSQL.</p>
-        </article>
-
-        <article class="project-row reveal" data-project>
-          <div class="project-row-header" data-project-toggle>
-            <h3 class="project-row-title">EECE Consultation Hub</h3>
-            <span class="project-row-tag">Web App</span>
-          </div>
-          <p class="project-row-desc">Academic consultation platform deployed to 900+ users with real-time scheduling.</p>
-        </article>
-
-        <article class="project-row reveal" data-project>
-          <div class="project-row-header" data-project-toggle>
-            <h3 class="project-row-title">Breast Cancer Predictor</h3>
-            <span class="project-row-tag">ML</span>
-          </div>
-          <p class="project-row-desc">Machine learning predictor for cancer malignancy with Streamlit UI for laboratory use.</p>
-        </article>
-
-        <article class="project-row reveal" data-project>
-          <div class="project-row-header" data-project-toggle>
-            <h3 class="project-row-title">Traffic Violation Detection</h3>
-            <span class="project-row-tag">Research</span>
-          </div>
-          <p class="project-row-desc">Deep learning research comparing YOLOv7, DeepSORT, and Faster R-CNN for traffic monitoring.</p>
-        </article>
+      <div class="projects-index-layout">
+        <div class="projects-index-intro">
+          <h2 class="section-heading">Projects</h2>
+          <p class="projects-index-description">Selected work spanning full-stack development, machine learning, and research. Each project represents a unique challenge solved through thoughtful engineering.</p>
+          <p class="projects-index-hint">Click or scroll to explore.</p>
+        </div>
+        <nav class="projects-index-nav">
+          <a href="#project-1" class="project-index-item" data-project-link="1">
+            <span class="project-index-num">01</span>
+            <span class="project-index-title">Quantum Cash</span>
+          </a>
+          <a href="#project-2" class="project-index-item" data-project-link="2">
+            <span class="project-index-num">02</span>
+            <span class="project-index-title">EECE Consultation Hub</span>
+          </a>
+          <a href="#project-3" class="project-index-item" data-project-link="3">
+            <span class="project-index-num">03</span>
+            <span class="project-index-title">Breast Cancer Predictor</span>
+          </a>
+          <a href="#project-4" class="project-index-item" data-project-link="4">
+            <span class="project-index-num">04</span>
+            <span class="project-index-title">Traffic Violation Detection</span>
+          </a>
+        </nav>
       </div>
     </div>
   </section>
+
+  <!-- Project 1: Quantum Cash -->
+  <section id="project-1" class="section-framed section-right section-project" data-project-section="1">
+    <div class="section-card">
+    <aside class="project-meta">
+      <div class="project-meta-content">
+        <div class="project-meta-section">
+          <h4 class="project-meta-label">Tech Stack</h4>
+          <ul class="project-tech-list">
+            <li>Java / Spring Boot</li>
+            <li>Node.js / NestJS</li>
+            <li>PostgreSQL</li>
+            <li>Docker / Kubernetes</li>
+            <li>JWT Authentication</li>
+          </ul>
+        </div>
+        <div class="project-meta-links">
+          <a href="https://github.com/spencerjirehcebrian/quantum-cash-digital-wallet" target="_blank" rel="noopener noreferrer" class="project-link">
+            GitHub (v1)
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+          <a href="https://github.com/spencerjirehcebrian/CashDaddy" target="_blank" rel="noopener noreferrer" class="project-link">
+            GitHub (v2)
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </aside>
+    <article class="project-article">
+      <header class="project-article-header">
+        <span class="project-num">01</span>
+        <h2 class="project-title">Quantum Cash</h2>
+        <div class="project-tags">
+          <span class="project-tag">Microservices</span>
+          <span class="project-tag">Backend</span>
+        </div>
+      </header>
+      <!-- Mobile Meta -->
+      <div class="project-meta-mobile">
+        <div class="project-meta-mobile-section">
+          <h4 class="project-meta-label">Tech Stack</h4>
+          <p class="project-meta-value">Java, Spring Boot, NestJS, PostgreSQL, Docker</p>
+        </div>
+        <div class="project-meta-mobile-links">
+          <a href="https://github.com/spencerjirehcebrian/quantum-cash-digital-wallet" target="_blank" rel="noopener noreferrer" class="project-link">GitHub (v1)</a>
+          <a href="https://github.com/spencerjirehcebrian/CashDaddy" target="_blank" rel="noopener noreferrer" class="project-link">GitHub (v2)</a>
+        </div>
+      </div>
+      <div class="project-article-content">
+        <p class="project-description">A digital wallet system built with microservices architecture, designed for scalability and security. The system handles user management, transaction processing, and account services through independent, loosely-coupled services.</p>
+        <p class="project-description">Implemented secure JWT-based authentication with refresh token rotation, ensuring user sessions remain protected while maintaining a smooth experience. Each microservice communicates through well-defined APIs and message queues for asynchronous operations.</p>
+        <div class="project-highlights">
+          <h4 class="project-highlights-title">Key Features</h4>
+          <ul class="project-highlights-list">
+            <li>Microservices architecture with independent deployment</li>
+            <li>JWT authentication with secure refresh token handling</li>
+            <li>PostgreSQL for reliable transaction storage</li>
+            <li>Containerized with Docker and orchestrated via Kubernetes</li>
+            <li>RESTful APIs with comprehensive error handling</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+    </div>
+  </section>
+
+  <!-- Project 2: EECE Consultation Hub -->
+  <section id="project-2" class="section-framed section-right section-project" data-project-section="2">
+    <div class="section-card">
+    <aside class="project-meta">
+      <div class="project-meta-content">
+        <div class="project-meta-section">
+          <h4 class="project-meta-label">Tech Stack</h4>
+          <ul class="project-tech-list">
+            <li>React / Next.js</li>
+            <li>TypeScript</li>
+            <li>Node.js / Express</li>
+            <li>PostgreSQL</li>
+            <li>AWS (EC2, S3)</li>
+          </ul>
+        </div>
+        <div class="project-meta-section">
+          <h4 class="project-meta-label">Users</h4>
+          <p class="project-meta-value">900+</p>
+        </div>
+        <div class="project-meta-links">
+          <a href="https://eece-consultation-hub.spencerjireh.com/" target="_blank" rel="noopener noreferrer" class="project-link">
+            Live Site<sup>*</sup>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+        </div>
+        <p class="project-meta-note"><sup>*</sup>Active production system - please browse respectfully.</p>
+      </div>
+    </aside>
+    <article class="project-article">
+      <header class="project-article-header">
+        <span class="project-num">02</span>
+        <h2 class="project-title">EECE Consultation Hub</h2>
+        <div class="project-tags">
+          <span class="project-tag">Web App</span>
+          <span class="project-tag">Full Stack</span>
+        </div>
+      </header>
+      <!-- Mobile Meta -->
+      <div class="project-meta-mobile">
+        <div class="project-meta-mobile-section">
+          <h4 class="project-meta-label">Tech Stack</h4>
+          <p class="project-meta-value">React, Next.js, TypeScript, Node.js, PostgreSQL</p>
+        </div>
+        <div class="project-meta-mobile-links">
+          <a href="https://eece-consultation-hub.spencerjireh.com/" target="_blank" rel="noopener noreferrer" class="project-link">Live Site<sup>*</sup></a>
+        </div>
+        <p class="project-meta-note"><sup>*</sup>Active production system - please browse respectfully.</p>
+      </div>
+      <div class="project-article-content">
+        <p class="project-description">An academic consultation platform developed for the Electrical and Electronics Engineering department. The system streamlines the scheduling process between students and faculty members, replacing a manual appointment system.</p>
+        <p class="project-description">Successfully deployed to serve over 900 users including students, faculty advisors, and department administrators. Features real-time availability updates, automated notifications, and comprehensive scheduling management.</p>
+        <div class="project-highlights">
+          <h4 class="project-highlights-title">Key Features</h4>
+          <ul class="project-highlights-list">
+            <li>Real-time availability and scheduling system</li>
+            <li>Role-based access for students, faculty, and admins</li>
+            <li>Automated email notifications for appointments</li>
+            <li>Dashboard analytics for department reporting</li>
+            <li>Mobile-responsive design for on-the-go access</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+    </div>
+  </section>
+
+  <!-- Project 3: Breast Cancer Predictor -->
+  <section id="project-3" class="section-framed section-right section-project" data-project-section="3">
+    <div class="section-card">
+    <aside class="project-meta">
+      <div class="project-meta-content">
+        <div class="project-meta-section">
+          <h4 class="project-meta-label">Tech Stack</h4>
+          <ul class="project-tech-list">
+            <li>Python</li>
+            <li>TensorFlow / Keras</li>
+            <li>Scikit-learn</li>
+            <li>Streamlit</li>
+            <li>Pandas / NumPy</li>
+          </ul>
+        </div>
+        <div class="project-meta-links">
+          <a href="https://github.com/spencerjirehcebrian/jirehs-breast-cancer-predictor" target="_blank" rel="noopener noreferrer" class="project-link">
+            GitHub
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+          <a href="https://flymetothesun-jirehs-breast-cancer-predictor-appmain-wbz36v.streamlit.app/" target="_blank" rel="noopener noreferrer" class="project-link">
+            Live Demo
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </aside>
+    <article class="project-article">
+      <header class="project-article-header">
+        <span class="project-num">03</span>
+        <h2 class="project-title">Breast Cancer Predictor</h2>
+        <div class="project-tags">
+          <span class="project-tag">Machine Learning</span>
+          <span class="project-tag">Healthcare</span>
+        </div>
+      </header>
+      <!-- Mobile Meta -->
+      <div class="project-meta-mobile">
+        <div class="project-meta-mobile-section">
+          <h4 class="project-meta-label">Tech Stack</h4>
+          <p class="project-meta-value">Python, TensorFlow, Scikit-learn, Streamlit</p>
+        </div>
+        <div class="project-meta-mobile-links">
+          <a href="https://github.com/spencerjirehcebrian/jirehs-breast-cancer-predictor" target="_blank" rel="noopener noreferrer" class="project-link">GitHub</a>
+          <a href="https://flymetothesun-jirehs-breast-cancer-predictor-appmain-wbz36v.streamlit.app/" target="_blank" rel="noopener noreferrer" class="project-link">Demo</a>
+        </div>
+      </div>
+      <div class="project-article-content">
+        <p class="project-description">A machine learning application designed to assist medical professionals in predicting breast cancer malignancy. The model analyzes cell nuclei characteristics from fine needle aspirate (FNA) images to classify tumors as benign or malignant.</p>
+        <p class="project-description">Built with an intuitive Streamlit interface that allows laboratory technicians to input measurements and receive instant predictions with confidence scores. The model achieves high accuracy through ensemble methods and careful feature engineering.</p>
+        <div class="project-highlights">
+          <h4 class="project-highlights-title">Key Features</h4>
+          <ul class="project-highlights-list">
+            <li>Ensemble ML model with high prediction accuracy</li>
+            <li>Interactive Streamlit UI for medical staff</li>
+            <li>Confidence scoring for each prediction</li>
+            <li>Feature importance visualization</li>
+            <li>Exportable reports for medical records</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+    </div>
+  </section>
+
+  <!-- Project 4: Traffic Violation Detection -->
+  <section id="project-4" class="section-framed section-right section-project" data-project-section="4">
+    <div class="section-card">
+    <aside class="project-meta">
+      <div class="project-meta-content">
+        <div class="project-meta-section">
+          <h4 class="project-meta-label">Tech Stack</h4>
+          <ul class="project-tech-list">
+            <li>Python</li>
+            <li>YOLOv7</li>
+            <li>DeepSORT</li>
+            <li>Faster R-CNN</li>
+            <li>OpenCV</li>
+          </ul>
+        </div>
+        <div class="project-meta-section">
+          <h4 class="project-meta-label">Type</h4>
+          <p class="project-meta-value">Research</p>
+        </div>
+        <div class="project-meta-links">
+          <a href="https://github.com/spencerjirehcebrian/YOLOv7-Deepsort-License-Plate-Coding-Detector" target="_blank" rel="noopener noreferrer" class="project-link">
+            GitHub
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </aside>
+    <article class="project-article">
+      <header class="project-article-header">
+        <span class="project-num">04</span>
+        <h2 class="project-title">Traffic Violation Detection</h2>
+        <div class="project-tags">
+          <span class="project-tag">Research</span>
+          <span class="project-tag">Deep Learning</span>
+        </div>
+      </header>
+      <!-- Mobile Meta -->
+      <div class="project-meta-mobile">
+        <div class="project-meta-mobile-section">
+          <h4 class="project-meta-label">Tech Stack</h4>
+          <p class="project-meta-value">Python, YOLOv7, DeepSORT, Faster R-CNN</p>
+        </div>
+        <div class="project-meta-mobile-links">
+          <a href="https://github.com/spencerjirehcebrian/YOLOv7-Deepsort-License-Plate-Coding-Detector" target="_blank" rel="noopener noreferrer" class="project-link">GitHub</a>
+        </div>
+      </div>
+      <div class="project-article-content">
+        <p class="project-description">A deep learning research project comparing state-of-the-art object detection models for automated traffic violation monitoring. The study evaluates YOLOv7, DeepSORT, and Faster R-CNN for detecting and tracking vehicles in real-time traffic footage.</p>
+        <p class="project-description">The research focuses on identifying specific violations such as illegal lane changes, running red lights, and improper turns. Comparative analysis includes accuracy metrics, processing speed, and real-world deployment considerations.</p>
+        <div class="project-highlights">
+          <h4 class="project-highlights-title">Research Highlights</h4>
+          <ul class="project-highlights-list">
+            <li>Comparative analysis of YOLO, DeepSORT, and Faster R-CNN</li>
+            <li>Real-time vehicle detection and tracking</li>
+            <li>Custom dataset for Philippine traffic scenarios</li>
+            <li>Performance benchmarking on embedded hardware</li>
+            <li>Published findings and methodology documentation</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+    </div>
+  </section>
+
+  <!-- Project Side Navigation (Desktop) -->
+  <nav class="project-side-nav" data-project-nav aria-label="Project navigation">
+    <a href="#project-1" class="project-side-nav-item" data-nav-target="1">
+      <span class="project-side-nav-num">01</span>
+      <span class="project-side-nav-line"></span>
+    </a>
+    <a href="#project-2" class="project-side-nav-item" data-nav-target="2">
+      <span class="project-side-nav-num">02</span>
+      <span class="project-side-nav-line"></span>
+    </a>
+    <a href="#project-3" class="project-side-nav-item" data-nav-target="3">
+      <span class="project-side-nav-num">03</span>
+      <span class="project-side-nav-line"></span>
+    </a>
+    <a href="#project-4" class="project-side-nav-item" data-nav-target="4">
+      <span class="project-side-nav-num">04</span>
+      <span class="project-side-nav-line"></span>
+    </a>
+  </nav>
+
+  <!-- Project Dots Navigation (Mobile) -->
+  <nav class="project-dots-nav" data-project-dots aria-label="Project navigation">
+    <button class="project-dot" data-dot-target="1" aria-label="Go to project 1"></button>
+    <button class="project-dot" data-dot-target="2" aria-label="Go to project 2"></button>
+    <button class="project-dot" data-dot-target="3" aria-label="Go to project 3"></button>
+    <button class="project-dot" data-dot-target="4" aria-label="Go to project 4"></button>
+  </nav>
 
   <!-- Contact Section - Full Width Bottom -->
   <section id="contact" class="section-framed section-full section-contact">
