@@ -667,6 +667,7 @@ class Portfolio {
     const panelTitle = panel.querySelector<HTMLElement>('[data-panel-title]');
     const panelCompany = panel.querySelector<HTMLElement>('[data-panel-company]');
     const panelDuration = panel.querySelector<HTMLElement>('[data-panel-duration]');
+    const panelDescription = panel.querySelector<HTMLElement>('[data-panel-description]');
     const panelResponsibilities = panel.querySelector<HTMLUListElement>('[data-panel-responsibilities]');
     const panelTech = panel.querySelector<HTMLElement>('[data-panel-tech]');
     const panelLink = panel.querySelector<HTMLAnchorElement>('[data-panel-link]');
@@ -694,6 +695,7 @@ class Portfolio {
       const title = detailContent.querySelector('[data-title]')?.textContent || '';
       const company = detailContent.querySelector('[data-company]')?.textContent || '';
       const duration = detailContent.querySelector('[data-duration]')?.textContent || '';
+      const description = detailContent.querySelector('[data-description]')?.textContent || '';
       const website = detailContent.querySelector('[data-website]')?.textContent || '';
       const tech = detailContent.querySelector('[data-tech]')?.textContent || '';
       const responsibilities = detailContent.querySelector('[data-responsibilities]');
@@ -701,6 +703,7 @@ class Portfolio {
       if (panelTitle) panelTitle.textContent = title;
       if (panelCompany) panelCompany.textContent = company;
       if (panelDuration) panelDuration.textContent = duration;
+      if (panelDescription) panelDescription.textContent = description;
       if (panelTech) panelTech.textContent = tech;
 
       if (panelLink) {
@@ -782,6 +785,7 @@ class Portfolio {
       const detailContent = item.querySelector('.experience-detail-content');
       if (!detailContent) return null;
 
+      const description = detailContent.querySelector('[data-description]')?.textContent || '';
       const duration = detailContent.querySelector('[data-duration]')?.textContent || '';
       const website = detailContent.querySelector('[data-website]')?.textContent || '';
       const tech = detailContent.querySelector('[data-tech]')?.textContent || '';
@@ -791,10 +795,10 @@ class Portfolio {
       accordion.className = 'experience-accordion';
 
       accordion.innerHTML = `
+        ${description ? `
         <div class="experience-accordion-section">
-          <h4 class="experience-accordion-title">Duration</h4>
-          <p class="experience-accordion-content">${duration}</p>
-        </div>
+          <p class="experience-accordion-description">${description}</p>
+        </div>` : ''}
         <div class="experience-accordion-section">
           <h4 class="experience-accordion-title">Responsibilities</h4>
           <ul class="experience-accordion-list">${responsibilities?.innerHTML || ''}</ul>

@@ -17,7 +17,7 @@
 
   /* Set core root defaults */
   html {
-    font-size: 106.25%; /* 17px base (17/16 = 1.0625) */
+    font-size: 112.5%; /* 18px base (18/16 = 1.125) */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -27,7 +27,7 @@
   /* Mobile typography scaling */
   @media (max-width: 639px) {
     html {
-      font-size: 100%; /* 16px base on mobile (down from 17px) */
+      font-size: 106.25%; /* 17px base on mobile (17/16 = 1.0625) */
     }
   }
 
