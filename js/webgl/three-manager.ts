@@ -278,6 +278,7 @@ export class ThreeManager {
         u_image: { value: this.imageTexture },
         u_imageAspect: { value: 1.0 }, // Dynamically set when image loads
         u_useImage: { value: 1 }, // 1 = use image, 0 = use voronoi
+        u_isMobile: { value: this.isMobile ? 1 : 0 }, // 1 = contain mode, 0 = cover mode
       },
       vertexShader: proceduralGradientShader.vertexShader,
       fragmentShader: proceduralGradientShader.fragmentShader,

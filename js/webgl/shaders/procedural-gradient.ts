@@ -13,6 +13,7 @@ export const proceduralGradientShader = {
     u_image: { value: null },
     u_imageAspect: { value: 1.0 }, // Dynamically set from loaded texture
     u_useImage: { value: 1 }, // 1 = use image, 0 = use voronoi
+    u_isMobile: { value: 0 }, // 1 = mobile (contain mode), 0 = desktop (cover mode)
   },
 
   vertexShader: /* glsl */ `
@@ -107,13 +108,16 @@ export const proceduralGradientShader = {
       vec2 offset = vec2(0.0);
 
       if (screenAspect > imageAspect) {
-        // Screen is wider - fit to height, crop sides
-        scale.x = imageAspect / screenAspect;
-        offset.x = (1.0 - scale.x) * 0.5;
+        // Screen is wider than image - fit to width, crop top only
+        // Apply zoom limit only in landscape to prevent extreme cropping
+        float minScale = 0.8;
+        scale.y = max(imageAspect / screenAspect, minScale);
+        offset.y = 0.0; // Always show bottom of image
       } else {
-        // Screen is taller - fit to width, crop top/bottom
-        scale.y = screenAspect / imageAspect;
-        offset.y = (1.0 - scale.y) * 0.5;
+        // Screen is taller than image - fit to height, crop sides
+        // Full cover mode on portrait
+        scale.x = screenAspect / imageAspect;
+        offset.x = (1.0 - scale.x) * 0.5;
       }
 
       vec2 imageUv = uv * scale + offset;
