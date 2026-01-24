@@ -330,8 +330,9 @@ class Portfolio {
       }
     });
 
-    // Close menu when clicking a link
+    // Close menu when clicking a link (except painting button which stays open)
     dropdownLinks?.forEach(link => {
+      if (link.hasAttribute('data-change-painting')) return;
       link.addEventListener('click', () => {
         closeMenu();
       });
@@ -339,10 +340,10 @@ class Portfolio {
 
     // Change painting button (desktop only - painting cycling disabled on mobile)
     changePaintingBtn?.addEventListener('click', () => {
-      if (this.sceneController && !this.threeManager?.isMobile) {
-        this.sceneController.triggerNextPainting();
-      }
-      closeMenu();
+      if (!this.sceneController || this.threeManager?.isMobile) return;
+      if (this.sceneController.isWashTransitioning) return;
+
+      this.sceneController.triggerNextPainting();
     });
 
     // Close menu on escape key

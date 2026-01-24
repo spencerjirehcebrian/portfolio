@@ -39,7 +39,7 @@ export class SceneController {
   isWashTransitioning: boolean = false;
   washProgress: number = 0;
   washStartTime: number = 0;
-  washDuration: number = 5000; // 5s watercolor wash
+  washDuration: number = 6000; // 6s watercolor wash
 
   constructor(threeManager: ThreeManager) {
     this.threeManager = threeManager;
@@ -144,6 +144,9 @@ export class SceneController {
     this.washStartTime = Date.now();
     this.currentPaintingIndex = nextIndex;
 
+    // Broadcast transition state for UI feedback
+    document.body.classList.add('is-painting-transitioning');
+
     // Reset idle timer for next cycle
     this.idleStartTime = Date.now();
   }
@@ -173,6 +176,9 @@ export class SceneController {
     // Swap textures in ThreeManager
     this.threeManager.completePaintingTransition(this.currentPaintingIndex);
     this.threeManager.updateWashProgress(0);
+
+    // Broadcast transition state for UI feedback
+    document.body.classList.remove('is-painting-transitioning');
   }
 
   /**
