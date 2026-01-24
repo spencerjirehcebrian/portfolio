@@ -52,12 +52,47 @@
       letter-spacing: 0.15em;
       text-transform: uppercase;
       color: hsl(210, 8%, 45%);
+      /* Offset letter-spacing on last character for true centering */
+      margin-left: 0.15em;
+      margin-top: 0.12em;
+    }
+
+    /* Loader container with rotating arc */
+    .loader-arc {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 120px;
+      height: 120px;
+    }
+
+    .loader-arc::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1.5px solid hsl(210, 8%, 45%, 0.2);
+      border-top-color: hsl(210, 8%, 45%);
+      border-right-color: hsl(210, 8%, 45%);
+      border-radius: 50%;
+      animation: loader-spin 1.618s linear infinite;
+    }
+
+    @keyframes loader-spin {
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* Reduced motion: disable animations */
     @media (prefers-reduced-motion: reduce) {
       .site-loader {
         transition: none;
+      }
+      .loader-arc::before {
+        animation: none;
+        border-top-color: transparent;
+        border-right-color: hsl(210, 8%, 45%);
       }
     }
 
@@ -133,7 +168,9 @@
 <body data-loading>
   <!-- Loading Screen -->
   <div class="site-loader" aria-live="polite" aria-label="Loading portfolio">
-    <span class="loader-text">Loading</span>
+    <div class="loader-arc">
+      <span class="loader-text">Loading</span>
+    </div>
 
     <!-- Mobile Warning (hidden by default, shown via JS) -->
     <div class="mobile-warning" aria-hidden="true">

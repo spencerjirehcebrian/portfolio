@@ -24,7 +24,7 @@ class LoadingManager {
   private loader: HTMLElement | null;
   private body: HTMLElement;
   private timeout = 8000; // 8 second max wait
-  private minDisplayTime = 300; // Minimum loader display time (prevents flash on cached loads)
+  private minDisplayTime = 1500; // Minimum loader display time (show loading animation)
   private startTime: number;
   private prefersReducedMotion: boolean;
 
