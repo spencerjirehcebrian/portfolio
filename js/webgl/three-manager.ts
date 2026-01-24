@@ -98,7 +98,7 @@ export class ThreeManager {
   paintingTextures: (THREE.Texture | null)[] = [null, null, null, null, null, null, null];
   currentPaintingIndex: number = 0;
 
-  // Promise that resolves when all paintings load
+  // Promise that resolves when first painting loads (for fast initial render)
   readonly paintingsLoaded: Promise<void>;
 
   // Displacement ping-pong buffers
@@ -150,8 +150,9 @@ export class ThreeManager {
     // Initialize displacement buffers for water effect
     this.initDisplacementBuffers();
 
-    // Load paintings for idle cycling (Promise-based for loading screen)
-    this.paintingsLoaded = this.loadPaintings();
+    // Load first painting only for fast initial render
+    // Remaining paintings loaded in background after UI is visible (desktop only)
+    this.paintingsLoaded = this.loadFirstPainting();
 
     // Create noise plane
     this.noiseMaterial = this.createNoiseMaterial();
@@ -314,51 +315,74 @@ export class ThreeManager {
   }
 
   /**
-   * Load all paintings for idle cycling
+   * Load only the first painting for fast initial render
    */
-  loadPaintings(): Promise<void> {
+  loadFirstPainting(): Promise<void> {
+    const loader = new THREE.TextureLoader();
+    const firstPainting = PAINTINGS[0];
+
+    return new Promise<void>((resolve) => {
+      loader.load(
+        firstPainting.url,
+        (texture) => {
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+          this.paintingTextures[0] = texture;
+
+          // Set as current painting
+          if (this.noiseMaterial) {
+            this.noiseMaterial.uniforms.u_imageCurrent.value = texture;
+            const aspect = texture.image.width / texture.image.height;
+            this.noiseMaterial.uniforms.u_imageAspect.value = aspect;
+            this.displacementMaterial.uniforms.u_imageAspect.value = aspect;
+          }
+          resolve();
+        },
+        undefined,
+        (error) => {
+          console.warn('Failed to load first painting:', error);
+          // Fall back to Voronoi pattern
+          if (this.noiseMaterial) {
+            this.noiseMaterial.uniforms.u_useImage.value = 0;
+          }
+          resolve();
+        }
+      );
+    });
+  }
+
+  /**
+   * Load remaining paintings in background (desktop only)
+   * Call this after UI is visible to avoid blocking initial render
+   */
+  loadRemainingPaintings(): void {
+    // Skip on mobile - only first painting is used
+    if (this.isMobile) return;
+
     const loader = new THREE.TextureLoader();
 
-    const loadPromises = PAINTINGS.map((painting, index) => {
-      const url = painting.url;
-      return new Promise<void>((resolve) => {
-        loader.load(
-          url,
-          (texture) => {
-            texture.minFilter = THREE.LinearFilter;
-            texture.magFilter = THREE.LinearFilter;
-            this.paintingTextures[index] = texture;
+    // Load paintings 1-6 (index 0 already loaded)
+    PAINTINGS.slice(1).forEach((painting, sliceIndex) => {
+      const index = sliceIndex + 1; // Actual index in PAINTINGS array
+      loader.load(
+        painting.url,
+        (texture) => {
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+          this.paintingTextures[index] = texture;
 
-            // Set first painting as initial
-            if (index === 0 && this.noiseMaterial) {
-              this.noiseMaterial.uniforms.u_imageCurrent.value = texture;
-              const aspect = texture.image.width / texture.image.height;
-              this.noiseMaterial.uniforms.u_imageAspect.value = aspect;
-              // Sync displacement shader with image aspect
-              this.displacementMaterial.uniforms.u_imageAspect.value = aspect;
-            }
-            resolve();
-          },
-          undefined,
-          (error) => {
-            console.warn(`Failed to load painting ${index}:`, error);
-            resolve();
+          // Set up next painting texture when painting 1 loads
+          if (index === 1 && this.noiseMaterial) {
+            this.noiseMaterial.uniforms.u_imageNext.value = texture;
+            const nextAspect = texture.image.width / texture.image.height;
+            this.noiseMaterial.uniforms.u_imageAspectNext.value = nextAspect;
           }
-        );
-      });
-    });
-
-    return Promise.all(loadPromises).then(() => {
-      // Set up next painting texture with its aspect ratio
-      if (this.paintingTextures[1] && this.noiseMaterial) {
-        this.noiseMaterial.uniforms.u_imageNext.value = this.paintingTextures[1];
-        const nextAspect = this.paintingTextures[1].image.width / this.paintingTextures[1].image.height;
-        this.noiseMaterial.uniforms.u_imageAspectNext.value = nextAspect;
-      }
-      // Fall back to Voronoi if no paintings loaded
-      if (!this.paintingTextures.some(t => t !== null) && this.noiseMaterial) {
-        this.noiseMaterial.uniforms.u_useImage.value = 0;
-      }
+        },
+        undefined,
+        (error) => {
+          console.warn(`Failed to load painting ${index}:`, error);
+        }
+      );
     });
   }
 

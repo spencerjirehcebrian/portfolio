@@ -228,9 +228,12 @@ class Portfolio {
       }
     }
 
-    // Wait for all assets to load before revealing content
+    // Wait for first painting to load before revealing content
     await this.loadingManager.waitForAssets(this.threeManager);
     this.loadingManager.reveal();
+
+    // Load remaining paintings in background (desktop only)
+    this.threeManager?.loadRemainingPaintings();
 
     // Initialize UI components after reveal
     this.initNavigation();
