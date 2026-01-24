@@ -41,11 +41,12 @@ export class ThreeManager {
   // Placeholder texture for mobile (prevents null sampler issues)
   placeholderTexture: THREE.DataTexture;
 
-  // Test image texture (temporary for Kuwahara testing)
-  imageTexture: THREE.Texture | null = null;
+  // Painting textures for idle cycling
+  paintingTextures: (THREE.Texture | null)[] = [null, null, null, null, null, null, null];
+  currentPaintingIndex: number = 0;
 
-  // Promise that resolves when background image loads (or fails gracefully)
-  readonly imageLoaded: Promise<THREE.Texture | null>;
+  // Promise that resolves when all paintings load
+  readonly paintingsLoaded: Promise<void>;
 
   // Displacement ping-pong buffers
   displacementTargetA!: THREE.WebGLRenderTarget;
@@ -96,8 +97,8 @@ export class ThreeManager {
     // Initialize displacement buffers for water effect
     this.initDisplacementBuffers();
 
-    // Load test image for Kuwahara filter testing (Promise-based for loading screen)
-    this.imageLoaded = this.loadTestImage();
+    // Load paintings for idle cycling (Promise-based for loading screen)
+    this.paintingsLoaded = this.loadPaintings();
 
     // Create noise plane
     this.noiseMaterial = this.createNoiseMaterial();
@@ -247,41 +248,87 @@ export class ThreeManager {
   }
 
   /**
-   * Load test image for Kuwahara filter testing
-   * Returns a Promise that resolves with the texture, or null on failure
+   * Load all paintings for idle cycling
    */
-  loadTestImage(): Promise<THREE.Texture | null> {
-    return new Promise((resolve) => {
-      const loader = new THREE.TextureLoader();
-      // Constable's "The Hay Wain" - public domain landscape painting
-      const imageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/John_Constable_The_Hay_Wain.jpg/1280px-John_Constable_The_Hay_Wain.jpg';
+  loadPaintings(): Promise<void> {
+    const loader = new THREE.TextureLoader();
+    const paintingUrls = [
+      // Constable's "The Hay Wain" - warm pastoral
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/John_Constable_The_Hay_Wain.jpg/1280px-John_Constable_The_Hay_Wain.jpg',
+      // Monet's "Water Lilies" - cool, serene
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/1280px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg',
+      // Turner's "The Fighting Temeraire" - golden sunset
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg/1280px-The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg',
+      // Monet's "Impression, Sunrise" - soft dawn landscape
+      'https://upload.wikimedia.org/wikipedia/commons/5/59/Monet_-_Impression%2C_Sunrise.jpg',
+      // Turner's "Rain, Steam and Speed" - atmospheric, dynamic
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Turner_-_Rain%2C_Steam_and_Speed_-_National_Gallery_file.jpg/1280px-Turner_-_Rain%2C_Steam_and_Speed_-_National_Gallery_file.jpg',
+      // Hidalgo's "After the Typhoon" - dramatic Philippine seascape
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/After_the_Typhoon_by_F%C3%A9lix_Resurrecci%C3%B3n_Hidalgo.jpg/1280px-After_the_Typhoon_by_F%C3%A9lix_Resurrecci%C3%B3n_Hidalgo.jpg',
+      // Monet's "The Magpie" - winter snow scene
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Claude_Monet_-_The_Magpie_-_Google_Art_Project.jpg/1280px-Claude_Monet_-_The_Magpie_-_Google_Art_Project.jpg',
+    ];
 
-      loader.load(
-        imageUrl,
-        (texture) => {
-          texture.minFilter = THREE.LinearFilter;
-          texture.magFilter = THREE.LinearFilter;
-          this.imageTexture = texture;
-          // Update the material with the loaded texture and its aspect ratio
-          if (this.noiseMaterial) {
-            this.noiseMaterial.uniforms.u_image.value = texture;
-            // Calculate actual aspect ratio from loaded image dimensions
-            const imageAspect = texture.image.width / texture.image.height;
-            this.noiseMaterial.uniforms.u_imageAspect.value = imageAspect;
+    const loadPromises = paintingUrls.map((url, index) => {
+      return new Promise<void>((resolve) => {
+        loader.load(
+          url,
+          (texture) => {
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+            this.paintingTextures[index] = texture;
+
+            // Set first painting as initial
+            if (index === 0 && this.noiseMaterial) {
+              this.noiseMaterial.uniforms.u_imageCurrent.value = texture;
+              const aspect = texture.image.width / texture.image.height;
+              this.noiseMaterial.uniforms.u_imageAspect.value = aspect;
+            }
+            resolve();
+          },
+          undefined,
+          (error) => {
+            console.warn(`Failed to load painting ${index}:`, error);
+            resolve();
           }
-          resolve(texture);
-        },
-        undefined,
-        (error) => {
-          console.warn('Failed to load background image:', error);
-          // Fall back to Voronoi mode when image fails to load
-          if (this.noiseMaterial) {
-            this.noiseMaterial.uniforms.u_useImage.value = 0;
-          }
-          resolve(null);
-        }
-      );
+        );
+      });
     });
+
+    return Promise.all(loadPromises).then(() => {
+      // Set up next painting texture
+      if (this.paintingTextures[1] && this.noiseMaterial) {
+        this.noiseMaterial.uniforms.u_imageNext.value = this.paintingTextures[1];
+      }
+      // Fall back to Voronoi if no paintings loaded
+      if (!this.paintingTextures.some(t => t !== null) && this.noiseMaterial) {
+        this.noiseMaterial.uniforms.u_useImage.value = 0;
+      }
+    });
+  }
+
+  /**
+   * Prepare next painting for transition
+   */
+  prepareNextPainting(nextIndex: number): void {
+    const nextTexture = this.paintingTextures[nextIndex];
+    if (nextTexture && this.noiseMaterial) {
+      this.noiseMaterial.uniforms.u_imageNext.value = nextTexture;
+    }
+  }
+
+  /**
+   * Complete painting transition - swap current to next
+   */
+  completePaintingTransition(newIndex: number): void {
+    this.currentPaintingIndex = newIndex;
+    const currentTexture = this.paintingTextures[newIndex];
+    if (currentTexture && this.noiseMaterial) {
+      this.noiseMaterial.uniforms.u_imageCurrent.value = currentTexture;
+      // Update aspect ratio
+      const aspect = currentTexture.image.width / currentTexture.image.height;
+      this.noiseMaterial.uniforms.u_imageAspect.value = aspect;
+    }
   }
 
   /**
@@ -295,10 +342,13 @@ export class ThreeManager {
         u_resolution: { value: new THREE.Vector2() },
         u_color1: { value: new THREE.Vector3(0.9, 0.9, 0.9) },
         u_color2: { value: new THREE.Vector3(0.7, 0.7, 0.7) },
-        u_image: { value: this.imageTexture },
+        u_imageCurrent: { value: this.placeholderTexture }, // Use placeholder until loaded
+        u_imageNext: { value: this.placeholderTexture },
         u_imageAspect: { value: 1.0 }, // Dynamically set when image loads
         u_useImage: { value: 1 }, // 1 = use image, 0 = use voronoi
         u_isMobile: { value: this.isMobile ? 1 : 0 }, // 1 = contain mode, 0 = cover mode
+        u_washProgress: { value: 0.0 }, // Crossfade progress between paintings
+        u_washAngle: { value: 0.0 }, // Random angle for wash direction
       },
       vertexShader: proceduralGradientShader.vertexShader,
       fragmentShader: proceduralGradientShader.fragmentShader,
@@ -420,6 +470,22 @@ export class ThreeManager {
   }
 
   /**
+   * Update wash progress for painting crossfade
+   */
+  updateWashProgress(progress: number): void {
+    this.noiseMaterial.uniforms.u_washProgress.value = progress;
+  }
+
+  /**
+   * Set random angle for wash direction
+   */
+  randomizeWashAngle(): void {
+    // Full 360 degrees - any direction (in radians)
+    const angle = Math.random() * Math.PI * 2;
+    this.noiseMaterial.uniforms.u_washAngle.value = angle;
+  }
+
+  /**
    * Render frame using EffectComposer
    */
   render(): void {
@@ -449,9 +515,9 @@ export class ThreeManager {
     this.noiseMesh.geometry.dispose();
     this.paperTexture.dispose();
     this.placeholderTexture.dispose();
-    if (this.imageTexture) {
-      this.imageTexture.dispose();
-    }
+    this.paintingTextures.forEach(texture => {
+      if (texture) texture.dispose();
+    });
 
     // Clean up displacement resources
     this.displacementTargetA.dispose();

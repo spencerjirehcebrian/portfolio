@@ -112,7 +112,7 @@ class LoadingManager {
 
     // Wait for background image if WebGL is enabled
     if (threeManager) {
-      promises.push(threeManager.imageLoaded);
+      promises.push(threeManager.paintingsLoaded);
     }
 
     // Race between all assets loading and timeout
@@ -303,6 +303,7 @@ class Portfolio {
     const menuTrigger = document.querySelector<HTMLButtonElement>('[data-menu-trigger]');
     const dropdownMenu = document.querySelector<HTMLElement>('[data-dropdown-menu]');
     const dropdownLinks = dropdownMenu?.querySelectorAll<HTMLAnchorElement>('.dropdown-link');
+    const changePaintingBtn = document.querySelector<HTMLButtonElement>('[data-change-painting]');
 
     if (!menuTrigger || !dropdownMenu) return;
 
@@ -334,6 +335,14 @@ class Portfolio {
       link.addEventListener('click', () => {
         closeMenu();
       });
+    });
+
+    // Change painting button
+    changePaintingBtn?.addEventListener('click', () => {
+      if (this.sceneController) {
+        this.sceneController.triggerNextPainting();
+      }
+      closeMenu();
     });
 
     // Close menu on escape key

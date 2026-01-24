@@ -6,29 +6,13 @@
 
 import { ThreeManager } from './three-manager';
 
-interface ColorPair {
-  color1: number[];
-  color2: number[];
-}
-
 interface MousePos {
   x: number;
   y: number;
 }
 
-interface SectionColors {
-  [key: string]: ColorPair;
-}
-
 export class SceneController {
   threeManager: ThreeManager;
-  currentSection: string;
-  targetColors: ColorPair;
-  currentColors: ColorPair;
-  transitionProgress: number;
-  transitionDuration: number;
-  transitionStartTime: number;
-  isTransitioning: boolean;
   mousePos: MousePos;
   targetMousePos: MousePos;
   prevMousePos: MousePos;
@@ -39,23 +23,31 @@ export class SceneController {
   isAnimating: boolean;
   lastFrameTime: number;
   startTime: number;
-  sectionColors: SectionColors;
-  observer: IntersectionObserver | null = null;
+
+  // Idle state - using setInterval for reliable cross-tab timing
+  idleTimeout: number = 15000; // 15s
+  lastActivityTime: number = Date.now();
+  isIdle: boolean = false;
+  idleStartTime: number = 0;
+  idleCheckInterval: number | null = null;
+
+  // Painting cycle (5 paintings loaded in ThreeManager)
+  currentPaintingIndex: number = 0;
+  totalPaintings: number = 7;
+
+  // Wash transition
+  isWashTransitioning: boolean = false;
+  washProgress: number = 0;
+  washStartTime: number = 0;
+  washDuration: number = 5000; // 5s watercolor wash
 
   constructor(threeManager: ThreeManager) {
     this.threeManager = threeManager;
-    this.currentSection = 'hero';
-    this.targetColors = { color1: [0, 0, 0], color2: [0, 0, 0] };
-    this.currentColors = { color1: [0, 0, 0], color2: [0, 0, 0] };
-    this.transitionProgress = 0;
-    this.transitionDuration = 2000; // 2 seconds
-    this.transitionStartTime = 0;
-    this.isTransitioning = false;
 
     this.mousePos = { x: 0.5, y: 0.5 };
     this.targetMousePos = { x: 0.5, y: 0.5 };
     this.prevMousePos = { x: 0.5, y: 0.5 };
-    this.mouseLerp = 0.1; // Smooth mouse following
+    this.mouseLerp = 0.1;
     this.isMouseActive = false;
     this.moveIntensity = 0;
     this.targetMoveIntensity = 0;
@@ -64,192 +56,120 @@ export class SceneController {
     this.lastFrameTime = Date.now();
     this.startTime = Date.now();
 
-    // Section colors (HSL to RGB conversion)
-    this.sectionColors = this.getSectionColors();
-
-    // Initialize with hero colors
-    this.setColors('hero', true);
-
-    // Set up observers and listeners
-    this.setupIntersectionObserver();
+    // Set up event listeners
     this.setupMouseTracking();
-  }
-
-  /**
-   * Define section colors based on design tokens
-   */
-  getSectionColors(): SectionColors {
-    return {
-      hero: {
-        color1: this.hslToRgb(210, 15, 90),
-        color2: this.hslToRgb(210, 20, 70)
-      },
-      about: {
-        color1: this.hslToRgb(30, 12, 88),
-        color2: this.hslToRgb(30, 15, 75)
-      },
-      skills: {
-        color1: this.hslToRgb(220, 10, 85),
-        color2: this.hslToRgb(220, 15, 70)
-      },
-      experience: {
-        color1: this.hslToRgb(250, 15, 88),
-        color2: this.hslToRgb(250, 20, 75)
-      },
-      projects: {
-        color1: this.hslToRgb(140, 12, 85),
-        color2: this.hslToRgb(140, 18, 72)
-      },
-      'projects-index': {
-        color1: this.hslToRgb(140, 12, 87),
-        color2: this.hslToRgb(140, 16, 74)
-      },
-      'project-1': {
-        color1: this.hslToRgb(145, 14, 85),
-        color2: this.hslToRgb(145, 20, 70)
-      },
-      'project-2': {
-        color1: this.hslToRgb(135, 12, 86),
-        color2: this.hslToRgb(135, 18, 71)
-      },
-      'project-3': {
-        color1: this.hslToRgb(150, 13, 84),
-        color2: this.hslToRgb(150, 19, 69)
-      },
-      'project-4': {
-        color1: this.hslToRgb(130, 11, 86),
-        color2: this.hslToRgb(130, 17, 72)
-      },
-      contact: {
-        color1: this.hslToRgb(210, 15, 90),
-        color2: this.hslToRgb(210, 20, 70)
-      }
-    };
-  }
-
-  /**
-   * Convert HSL to RGB (values 0-1)
-   */
-  hslToRgb(h: number, s: number, l: number): number[] {
-    h /= 360;
-    s /= 100;
-    l /= 100;
-
-    let r, g, b;
-
-    if (s === 0) {
-      r = g = b = l;
-    } else {
-      const hue2rgb = (p: number, q: number, t: number): number => {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1 / 6) return p + (q - p) * 6 * t;
-        if (t < 1 / 2) return q;
-        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-        return p;
-      };
-
-      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      const p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1 / 3);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1 / 3);
-    }
-
-    return [r, g, b];
-  }
-
-  /**
-   * Set up Intersection Observer for section detection
-   */
-  setupIntersectionObserver(): void {
-    const options: IntersectionObserverInit = {
-      root: null,
-      rootMargin: '-50% 0px -50% 0px',
-      threshold: 0
-    };
-
-    this.observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const sectionId = entry.target.id || 'hero';
-          this.changeSection(sectionId);
-        }
-      });
-    }, options);
-
-    const sections = document.querySelectorAll('section[id]');
-    sections.forEach(section => this.observer?.observe(section));
+    this.setupIdleDetection();
   }
 
   /**
    * Set up mouse tracking (controls Kuwahara reveal)
-   * Disabled entirely on mobile - no mouse or touch interaction
    */
   setupMouseTracking(): void {
-    // Skip all mouse/touch tracking on mobile
     if (this.threeManager.isMobile) return;
 
-    let rafId: number | null = null;
+    const onActivity = (): void => {
+      this.lastActivityTime = Date.now();
+      if (this.isIdle || this.idleAmount > 0) {
+        this.exitIdleState();
+      }
+    };
 
     const updateMouse = (e: MouseEvent): void => {
-      // Double-check mobile flag in case of synthetic touch events
       if (this.threeManager.isMobile) return;
-      if (rafId) return;
-
-      rafId = requestAnimationFrame(() => {
-        this.targetMousePos.x = e.clientX / window.innerWidth;
-        this.targetMousePos.y = 1.0 - (e.clientY / window.innerHeight);
-        this.isMouseActive = true;
-        rafId = null;
-      });
-    };
-
-    const handleMouseEnter = (): void => {
-      if (this.threeManager.isMobile) return;
+      this.targetMousePos.x = e.clientX / window.innerWidth;
+      this.targetMousePos.y = 1.0 - (e.clientY / window.innerHeight);
       this.isMouseActive = true;
-    };
-
-    const handleMouseLeave = (): void => {
-      if (this.threeManager.isMobile) return;
-      this.isMouseActive = false;
+      onActivity();
     };
 
     window.addEventListener('mousemove', updateMouse, { passive: true });
-    document.addEventListener('mouseenter', handleMouseEnter, { passive: true });
-    document.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+    document.addEventListener('mouseenter', () => { this.isMouseActive = true; }, { passive: true });
+    document.addEventListener('mouseleave', () => { this.isMouseActive = false; }, { passive: true });
   }
 
   /**
-   * Change section and trigger color transition
+   * Set up idle detection using setInterval
+   * Runs even when tab is hidden - reliable cross-tab timing
    */
-  changeSection(sectionId: string): void {
-    if (sectionId === this.currentSection && !this.isTransitioning) {
-      return;
-    }
+  setupIdleDetection(): void {
+    if (this.threeManager.isMobile) return;
 
-    this.currentSection = sectionId;
-    this.setColors(sectionId);
+    // Check idle state every 500ms - works even when tab is hidden
+    this.idleCheckInterval = window.setInterval(() => {
+      const now = Date.now();
+      const timeSinceActivity = now - this.lastActivityTime;
+
+      // Enter idle state after timeout
+      if (timeSinceActivity > this.idleTimeout && !this.isIdle) {
+        this.isIdle = true;
+        this.idleStartTime = now;
+      }
+
+      // Trigger next painting after another timeout period of idle
+      if (this.isIdle && !this.isWashTransitioning) {
+        const idleDuration = now - this.idleStartTime;
+        if (idleDuration > this.idleTimeout) {
+          this.triggerNextPainting();
+        }
+      }
+    }, 500);
   }
 
   /**
-   * Set target colors for a section
+   * Exit idle state - called on mouse activity
    */
-  setColors(sectionId: string, immediate: boolean = false): void {
-    const colors = this.sectionColors[sectionId] || this.sectionColors.hero;
+  exitIdleState(): void {
+    this.isIdle = false;
+    this.lastActivityTime = Date.now();
+  }
 
-    this.targetColors.color1 = colors.color1;
-    this.targetColors.color2 = colors.color2;
+  /**
+   * Trigger transition to next painting
+   */
+  triggerNextPainting(): void {
+    if (this.isWashTransitioning) return;
 
-    if (immediate) {
-      this.currentColors.color1 = [...colors.color1];
-      this.currentColors.color2 = [...colors.color2];
-      this.isTransitioning = false;
-    } else {
-      this.isTransitioning = true;
-      this.transitionStartTime = Date.now();
-      this.transitionProgress = 0;
+    // Prepare next painting texture
+    const nextIndex = (this.currentPaintingIndex + 1) % this.totalPaintings;
+    this.threeManager.prepareNextPainting(nextIndex);
+
+    // Randomize wash direction
+    this.threeManager.randomizeWashAngle();
+
+    this.isWashTransitioning = true;
+    this.washProgress = 0;
+    this.washStartTime = Date.now();
+    this.currentPaintingIndex = nextIndex;
+
+    // Reset idle timer for next cycle
+    this.idleStartTime = Date.now();
+  }
+
+  /**
+   * Update wash transition animation
+   */
+  updateWashTransition(now: number): void {
+    const elapsed = now - this.washStartTime;
+    this.washProgress = Math.min(elapsed / this.washDuration, 1);
+
+    // Update shader
+    this.threeManager.updateWashProgress(this.washProgress);
+
+    if (this.washProgress >= 1) {
+      this.completeWashTransition();
     }
+  }
+
+  /**
+   * Complete wash transition
+   */
+  completeWashTransition(): void {
+    this.isWashTransitioning = false;
+    this.washProgress = 0;
+
+    // Swap textures in ThreeManager
+    this.threeManager.completePaintingTransition(this.currentPaintingIndex);
+    this.threeManager.updateWashProgress(0);
   }
 
   /**
@@ -257,13 +177,6 @@ export class SceneController {
    */
   lerp(start: number, end: number, t: number): number {
     return start + (end - start) * t;
-  }
-
-  /**
-   * Ease out cubic
-   */
-  easeOutCubic(t: number): number {
-    return 1 - Math.pow(1 - t, 3);
   }
 
   /**
@@ -282,15 +195,13 @@ export class SceneController {
     const dy = this.mousePos.y - this.prevMousePos.y;
     const moveSpeed = Math.sqrt(dx * dx + dy * dy);
 
-    // Update target intensity based on movement (ramps up quickly)
+    // Update target intensity based on movement
     this.targetMoveIntensity = Math.min(moveSpeed * 50, 1.0);
 
     // Smooth the intensity (fast ramp up, slow decay)
     if (this.targetMoveIntensity > this.moveIntensity) {
-      // Ramp up quickly
       this.moveIntensity = this.lerp(this.moveIntensity, this.targetMoveIntensity, 0.3);
     } else {
-      // Decay slowly
       this.moveIntensity = this.lerp(this.moveIntensity, this.targetMoveIntensity, 0.05);
     }
 
@@ -298,36 +209,15 @@ export class SceneController {
     this.prevMousePos.x = this.mousePos.x;
     this.prevMousePos.y = this.mousePos.y;
 
-    // Color transition
-    if (this.isTransitioning) {
-      const elapsed = now - this.transitionStartTime;
-      this.transitionProgress = Math.min(elapsed / this.transitionDuration, 1);
-
-      const t = this.easeOutCubic(this.transitionProgress);
-
-      // Interpolate colors
-      this.currentColors.color1 = [
-        this.lerp(this.currentColors.color1[0], this.targetColors.color1[0], t),
-        this.lerp(this.currentColors.color1[1], this.targetColors.color1[1], t),
-        this.lerp(this.currentColors.color1[2], this.targetColors.color1[2], t)
-      ];
-
-      this.currentColors.color2 = [
-        this.lerp(this.currentColors.color2[0], this.targetColors.color2[0], t),
-        this.lerp(this.currentColors.color2[1], this.targetColors.color2[1], t),
-        this.lerp(this.currentColors.color2[2], this.targetColors.color2[2], t)
-      ];
-
-      if (this.transitionProgress >= 1) {
-        this.isTransitioning = false;
-      }
+    // Update wash transition animation (desktop only)
+    if (!this.threeManager.isMobile && this.isWashTransitioning) {
+      this.updateWashTransition(now);
     }
 
     // Update ThreeManager uniforms
     const elapsed = (now - this.startTime) / 1000;
     this.threeManager.updateTime(elapsed);
     this.threeManager.updateMouse(this.mousePos.x, this.mousePos.y);
-    this.threeManager.updateColors(this.currentColors.color1, this.currentColors.color2);
 
     // Update displacement with mouse position and movement intensity
     this.threeManager.updateDisplacement(
@@ -372,8 +262,8 @@ export class SceneController {
    */
   dispose(): void {
     this.stop();
-    if (this.observer) {
-      this.observer.disconnect();
+    if (this.idleCheckInterval) {
+      clearInterval(this.idleCheckInterval);
     }
   }
 }
