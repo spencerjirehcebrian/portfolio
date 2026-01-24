@@ -7,7 +7,7 @@
 import '../css/main.css';
 
 // WebGL imports
-import { ThreeManager } from './webgl/three-manager';
+import { ThreeManager, PAINTINGS } from './webgl/three-manager';
 import { SceneController } from './webgl/scene-controller';
 
 // Extend Window interface for debugging
@@ -242,6 +242,7 @@ class Portfolio {
     this.initProjectAccordion();
     this.initExperiencePanel();
     this.initSkillsInteraction();
+    this.initPaintingAttribution();
 
     // Handle window resize
     window.addEventListener('resize', () => this.handleResize());
@@ -973,6 +974,47 @@ class Portfolio {
         skillItems.forEach(item => item.classList.remove('is-expanded'));
       }
     });
+  }
+
+  /**
+   * Initialize painting attribution display
+   * Shows current background painting info in corner (desktop only)
+   */
+  initPaintingAttribution(): void {
+    const attribution = document.querySelector<HTMLElement>('[data-painting-attribution]');
+    const titleEl = document.querySelector<HTMLElement>('[data-painting-title]');
+    const artistEl = document.querySelector<HTMLElement>('[data-painting-artist]');
+
+    if (!attribution || !titleEl || !artistEl) return;
+
+    // Skip on mobile - painting cycling disabled anyway
+    if (this.detectMobile()) return;
+
+    // Listen for painting change events
+    window.addEventListener('paintingchange', ((e: CustomEvent) => {
+      const { title, artist, isTransitioning } = e.detail;
+
+      // Update content
+      titleEl.textContent = title;
+      artistEl.textContent = artist;
+
+      // Update visibility and transition state
+      if (isTransitioning) {
+        attribution.classList.add('is-transitioning');
+      } else {
+        attribution.classList.remove('is-transitioning');
+        attribution.classList.add('is-visible');
+      }
+    }) as EventListener);
+
+    // Set initial painting info (event fired before listener was ready)
+    if (this.sceneController) {
+      const index = this.sceneController.currentPaintingIndex;
+      const painting = PAINTINGS[index];
+      titleEl.textContent = painting.title;
+      artistEl.textContent = painting.artist;
+      attribution.classList.add('is-visible');
+    }
   }
 
   /**

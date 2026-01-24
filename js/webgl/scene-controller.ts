@@ -4,7 +4,7 @@
  * Mouse position controls Kuwahara filter reveal
  */
 
-import { ThreeManager } from './three-manager';
+import { ThreeManager, PAINTINGS } from './three-manager';
 
 interface MousePos {
   x: number;
@@ -147,6 +147,18 @@ export class SceneController {
     // Broadcast transition state for UI feedback
     document.body.classList.add('is-painting-transitioning');
 
+    // Dispatch painting change event with metadata
+    const painting = PAINTINGS[nextIndex];
+    window.dispatchEvent(new CustomEvent('paintingchange', {
+      detail: {
+        index: nextIndex,
+        title: painting.title,
+        artist: painting.artist,
+        year: painting.year,
+        isTransitioning: true,
+      }
+    }));
+
     // Reset idle timer for next cycle
     this.idleStartTime = Date.now();
   }
@@ -179,6 +191,18 @@ export class SceneController {
 
     // Broadcast transition state for UI feedback
     document.body.classList.remove('is-painting-transitioning');
+
+    // Dispatch painting change complete event
+    const painting = PAINTINGS[this.currentPaintingIndex];
+    window.dispatchEvent(new CustomEvent('paintingchange', {
+      detail: {
+        index: this.currentPaintingIndex,
+        title: painting.title,
+        artist: painting.artist,
+        year: painting.year,
+        isTransitioning: false,
+      }
+    }));
   }
 
   /**
@@ -248,6 +272,18 @@ export class SceneController {
 
     this.isAnimating = true;
     this.lastFrameTime = Date.now();
+
+    // Dispatch initial painting info
+    const painting = PAINTINGS[this.currentPaintingIndex];
+    window.dispatchEvent(new CustomEvent('paintingchange', {
+      detail: {
+        index: this.currentPaintingIndex,
+        title: painting.title,
+        artist: painting.artist,
+        year: painting.year,
+        isTransitioning: false,
+      }
+    }));
 
     const animate = (): void => {
       if (!this.isAnimating) return;

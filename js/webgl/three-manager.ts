@@ -18,6 +18,59 @@ interface ThreeManagerConfig {
   isMobile: boolean;
 }
 
+export interface PaintingMetadata {
+  title: string;
+  artist: string;
+  year?: string;
+  url: string;
+}
+
+// Painting metadata with attribution info
+export const PAINTINGS: PaintingMetadata[] = [
+  {
+    title: 'The Hay Wain',
+    artist: 'John Constable',
+    year: '1821',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/John_Constable_The_Hay_Wain.jpg/1280px-John_Constable_The_Hay_Wain.jpg',
+  },
+  {
+    title: 'Water Lilies',
+    artist: 'Claude Monet',
+    year: '1906',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/1280px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg',
+  },
+  {
+    title: 'The Fighting Temeraire',
+    artist: 'J.M.W. Turner',
+    year: '1839',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg/1280px-The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg',
+  },
+  {
+    title: 'Impression, Sunrise',
+    artist: 'Claude Monet',
+    year: '1872',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/5/59/Monet_-_Impression%2C_Sunrise.jpg',
+  },
+  {
+    title: 'Rain, Steam and Speed',
+    artist: 'J.M.W. Turner',
+    year: '1844',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Turner_-_Rain%2C_Steam_and_Speed_-_National_Gallery_file.jpg/1280px-Turner_-_Rain%2C_Steam_and_Speed_-_National_Gallery_file.jpg',
+  },
+  {
+    title: 'After the Typhoon',
+    artist: 'Felix Resurreccion Hidalgo',
+    year: '1879',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/After_the_Typhoon_by_F%C3%A9lix_Resurrecci%C3%B3n_Hidalgo.jpg/1280px-After_the_Typhoon_by_F%C3%A9lix_Resurrecci%C3%B3n_Hidalgo.jpg',
+  },
+  {
+    title: 'The Magpie',
+    artist: 'Claude Monet',
+    year: '1869',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Claude_Monet_-_The_Magpie_-_Google_Art_Project.jpg/1280px-Claude_Monet_-_The_Magpie_-_Google_Art_Project.jpg',
+  },
+];
+
 export class ThreeManager {
   canvas: HTMLCanvasElement;
   renderer: THREE.WebGLRenderer;
@@ -265,24 +318,9 @@ export class ThreeManager {
    */
   loadPaintings(): Promise<void> {
     const loader = new THREE.TextureLoader();
-    const paintingUrls = [
-      // Constable's "The Hay Wain" - warm pastoral
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/John_Constable_The_Hay_Wain.jpg/1280px-John_Constable_The_Hay_Wain.jpg',
-      // Monet's "Water Lilies" - cool, serene
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/1280px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg',
-      // Turner's "The Fighting Temeraire" - golden sunset
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg/1280px-The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg',
-      // Monet's "Impression, Sunrise" - soft dawn landscape
-      'https://upload.wikimedia.org/wikipedia/commons/5/59/Monet_-_Impression%2C_Sunrise.jpg',
-      // Turner's "Rain, Steam and Speed" - atmospheric, dynamic
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Turner_-_Rain%2C_Steam_and_Speed_-_National_Gallery_file.jpg/1280px-Turner_-_Rain%2C_Steam_and_Speed_-_National_Gallery_file.jpg',
-      // Hidalgo's "After the Typhoon" - dramatic Philippine seascape
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/After_the_Typhoon_by_F%C3%A9lix_Resurrecci%C3%B3n_Hidalgo.jpg/1280px-After_the_Typhoon_by_F%C3%A9lix_Resurrecci%C3%B3n_Hidalgo.jpg',
-      // Monet's "The Magpie" - winter snow scene
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Claude_Monet_-_The_Magpie_-_Google_Art_Project.jpg/1280px-Claude_Monet_-_The_Magpie_-_Google_Art_Project.jpg',
-    ];
 
-    const loadPromises = paintingUrls.map((url, index) => {
+    const loadPromises = PAINTINGS.map((painting, index) => {
+      const url = painting.url;
       return new Promise<void>((resolve) => {
         loader.load(
           url,
