@@ -22,6 +22,7 @@ export const displacementShader = {
     u_resolution: { value: null },
     u_texelSize: { value: null },
     u_time: { value: 0.0 },
+    u_imageAspect: { value: 1.0 },     // Image aspect ratio for coordinate alignment
   },
 
   vertexShader: /* glsl */ `
@@ -49,8 +50,30 @@ export const displacementShader = {
     uniform vec2 u_resolution;
     uniform vec2 u_texelSize;
     uniform float u_time;
+    uniform float u_imageAspect;
 
     varying vec2 vUv;
+
+    // Transform screen UV to image UV (matches procedural-gradient.ts getImageUV)
+    // Returns the UV and the scale factors used for the transformation
+    vec2 getImageUV(vec2 uv, out vec2 scale) {
+      float screenAspect = u_resolution.x / u_resolution.y;
+      scale = vec2(1.0);
+      vec2 offset = vec2(0.0);
+
+      if (screenAspect > u_imageAspect) {
+        // Screen wider - fit to width, crop top
+        float minScale = 0.8;
+        scale.y = max(u_imageAspect / screenAspect, minScale);
+        offset.y = 0.0;
+      } else {
+        // Screen taller - fit to height, crop sides
+        scale.x = screenAspect / u_imageAspect;
+        offset.x = (1.0 - scale.x) * 0.5;
+      }
+
+      return uv * scale + offset;
+    }
 
     void main() {
       vec2 prevState = texture2D(tPrevState, vUv).rg;
@@ -104,11 +127,18 @@ export const displacementShader = {
       }
 
       // Mouse interaction - smooth circle with soft edge
+      // Uses image-space coordinates so brush aligns with image content
       if (u_isActive > 0.5) {
-        float aspect = u_resolution.x / u_resolution.y;
-        vec2 correctedUV = vec2(vUv.x * aspect, vUv.y);
-        vec2 correctedMouse = vec2(u_mouse.x * aspect, u_mouse.y);
-        float dist = length(correctedUV - correctedMouse);
+        vec2 scale;
+        vec2 imageUV = getImageUV(vUv, scale);
+        vec2 imageMouse = getImageUV(u_mouse, scale);
+
+        // Calculate distance in image space, corrected for aspect ratio
+        // This keeps the brush circular on screen while positioning in image space
+        float screenAspect = u_resolution.x / u_resolution.y;
+        vec2 delta = (imageUV - imageMouse) / scale;
+        vec2 correctedDelta = vec2(delta.x * screenAspect, delta.y);
+        float dist = length(correctedDelta);
 
         // Smooth falloff for anti-aliased circle
         float softness = 0.015;

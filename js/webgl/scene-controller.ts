@@ -69,7 +69,7 @@ export class SceneController {
 
     const onActivity = (): void => {
       this.lastActivityTime = Date.now();
-      if (this.isIdle || this.idleAmount > 0) {
+      if (this.isIdle) {
         this.exitIdleState();
       }
     };
@@ -128,6 +128,9 @@ export class SceneController {
    */
   triggerNextPainting(): void {
     if (this.isWashTransitioning) return;
+
+    // Clear displacement buffer to prevent misalignment with new image
+    this.threeManager.clearDisplacementBuffer();
 
     // Prepare next painting texture
     const nextIndex = (this.currentPaintingIndex + 1) % this.totalPaintings;

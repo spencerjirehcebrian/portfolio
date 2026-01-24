@@ -137,7 +137,7 @@ export class ThreeManager {
     const { data, width, height } = generatePaperTexture(size);
 
     const texture = new THREE.DataTexture(
-      data,
+      data as unknown as Uint8Array<ArrayBuffer>,
       width,
       height,
       THREE.RGBAFormat,
@@ -186,6 +186,7 @@ export class ThreeManager {
         u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         u_texelSize: { value: new THREE.Vector2(1 / 512, 1 / 512) },
         u_time: { value: 0.0 },
+        u_imageAspect: { value: 1.0 },
       },
       vertexShader: displacementShader.vertexShader,
       fragmentShader: displacementShader.fragmentShader,
@@ -229,6 +230,18 @@ export class ThreeManager {
     return this.currentDisplacementTarget === 'A'
       ? this.displacementTargetB.texture
       : this.displacementTargetA.texture;
+  }
+
+  /**
+   * Clear displacement buffers - call when aspect ratio changes
+   * Prevents stale displacement from misaligning with new image content
+   */
+  clearDisplacementBuffer(): void {
+    this.renderer.setRenderTarget(this.displacementTargetA);
+    this.renderer.clear();
+    this.renderer.setRenderTarget(this.displacementTargetB);
+    this.renderer.clear();
+    this.renderer.setRenderTarget(null);
   }
 
   /**
@@ -283,6 +296,8 @@ export class ThreeManager {
               this.noiseMaterial.uniforms.u_imageCurrent.value = texture;
               const aspect = texture.image.width / texture.image.height;
               this.noiseMaterial.uniforms.u_imageAspect.value = aspect;
+              // Sync displacement shader with image aspect
+              this.displacementMaterial.uniforms.u_imageAspect.value = aspect;
             }
             resolve();
           },
@@ -296,9 +311,11 @@ export class ThreeManager {
     });
 
     return Promise.all(loadPromises).then(() => {
-      // Set up next painting texture
+      // Set up next painting texture with its aspect ratio
       if (this.paintingTextures[1] && this.noiseMaterial) {
         this.noiseMaterial.uniforms.u_imageNext.value = this.paintingTextures[1];
+        const nextAspect = this.paintingTextures[1].image.width / this.paintingTextures[1].image.height;
+        this.noiseMaterial.uniforms.u_imageAspectNext.value = nextAspect;
       }
       // Fall back to Voronoi if no paintings loaded
       if (!this.paintingTextures.some(t => t !== null) && this.noiseMaterial) {
@@ -314,6 +331,9 @@ export class ThreeManager {
     const nextTexture = this.paintingTextures[nextIndex];
     if (nextTexture && this.noiseMaterial) {
       this.noiseMaterial.uniforms.u_imageNext.value = nextTexture;
+      // Set next image's aspect ratio for correct UV calculation during wash
+      const aspect = nextTexture.image.width / nextTexture.image.height;
+      this.noiseMaterial.uniforms.u_imageAspectNext.value = aspect;
     }
   }
 
@@ -325,9 +345,10 @@ export class ThreeManager {
     const currentTexture = this.paintingTextures[newIndex];
     if (currentTexture && this.noiseMaterial) {
       this.noiseMaterial.uniforms.u_imageCurrent.value = currentTexture;
-      // Update aspect ratio
+      // Update aspect ratio for both shaders
       const aspect = currentTexture.image.width / currentTexture.image.height;
       this.noiseMaterial.uniforms.u_imageAspect.value = aspect;
+      this.displacementMaterial.uniforms.u_imageAspect.value = aspect;
     }
   }
 
@@ -344,7 +365,8 @@ export class ThreeManager {
         u_color2: { value: new THREE.Vector3(0.7, 0.7, 0.7) },
         u_imageCurrent: { value: this.placeholderTexture }, // Use placeholder until loaded
         u_imageNext: { value: this.placeholderTexture },
-        u_imageAspect: { value: 1.0 }, // Dynamically set when image loads
+        u_imageAspect: { value: 1.0 }, // Current image aspect ratio
+        u_imageAspectNext: { value: 1.0 }, // Next image aspect ratio for transitions
         u_useImage: { value: 1 }, // 1 = use image, 0 = use voronoi
         u_isMobile: { value: this.isMobile ? 1 : 0 }, // 1 = contain mode, 0 = cover mode
         u_washProgress: { value: 0.0 }, // Crossfade progress between paintings
@@ -442,6 +464,7 @@ export class ThreeManager {
     this.noiseMaterial.uniforms.u_resolution.value.copy(this.resolution);
     this.kuwaharaPass.uniforms.u_resolution.value.copy(this.resolution);
     this.watercolorPass.uniforms.u_resolution.value.copy(this.resolution);
+    this.displacementMaterial.uniforms.u_resolution.value.copy(this.resolution);
   }
 
   /**

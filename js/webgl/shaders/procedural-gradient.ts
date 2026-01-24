@@ -12,7 +12,8 @@ export const proceduralGradientShader = {
     u_color2: { value: null },
     u_imageCurrent: { value: null },
     u_imageNext: { value: null },
-    u_imageAspect: { value: 1.0 }, // Dynamically set from loaded texture
+    u_imageAspect: { value: 1.0 }, // Current image aspect ratio
+    u_imageAspectNext: { value: 1.0 }, // Next image aspect ratio for transitions
     u_useImage: { value: 1 }, // 1 = use image, 0 = use voronoi
     u_isMobile: { value: 0 }, // 1 = mobile (contain mode), 0 = desktop (cover mode)
     u_washProgress: { value: 0.0 }, // Crossfade between paintings
@@ -40,6 +41,7 @@ export const proceduralGradientShader = {
     uniform sampler2D u_imageCurrent;
     uniform sampler2D u_imageNext;
     uniform float u_imageAspect;
+    uniform float u_imageAspectNext;
     uniform int u_useImage;
     uniform float u_washProgress;
     uniform float u_washAngle;
@@ -105,9 +107,7 @@ export const proceduralGradientShader = {
     // IMAGE CODE
     // ============================================
 
-    vec2 getImageUV(vec2 uv) {
-      // Image aspect ratio (dynamically set from loaded texture)
-      float imageAspect = u_imageAspect;
+    vec2 getImageUV(vec2 uv, float imageAspect) {
       float screenAspect = u_resolution.x / u_resolution.y;
 
       vec2 scale = vec2(1.0);
@@ -155,12 +155,14 @@ export const proceduralGradientShader = {
     }
 
     vec3 getImageColor(vec2 uv) {
-      vec2 imageUv = getImageUV(uv);
-      vec3 currentColor = texture2D(u_imageCurrent, imageUv).rgb;
+      vec2 imageUvCurrent = getImageUV(uv, u_imageAspect);
+      vec3 currentColor = texture2D(u_imageCurrent, imageUvCurrent).rgb;
 
       // Paint wash transition - organic watercolor bleed
       if (u_washProgress > 0.0) {
-        vec3 nextColor = texture2D(u_imageNext, imageUv).rgb;
+        // Sample next image with its own aspect ratio for correct positioning
+        vec2 imageUvNext = getImageUV(uv, u_imageAspectNext);
+        vec3 nextColor = texture2D(u_imageNext, imageUvNext).rgb;
 
         // Ease the progress for smoother timing
         float progress = u_washProgress * u_washProgress * (3.0 - 2.0 * u_washProgress);

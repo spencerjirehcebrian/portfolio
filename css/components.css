@@ -188,6 +188,13 @@
     }
   }
 
+  /* Hide painting switch button on mobile (painting cycling disabled on mobile) */
+  @media (max-width: 767px) {
+    [data-change-painting] {
+      display: none;
+    }
+  }
+
   .dropdown-link::after {
     content: '';
     position: absolute;

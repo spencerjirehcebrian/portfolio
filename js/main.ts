@@ -337,9 +337,9 @@ class Portfolio {
       });
     });
 
-    // Change painting button
+    // Change painting button (desktop only - painting cycling disabled on mobile)
     changePaintingBtn?.addEventListener('click', () => {
-      if (this.sceneController) {
+      if (this.sceneController && !this.threeManager?.isMobile) {
         this.sceneController.triggerNextPainting();
       }
       closeMenu();
@@ -468,12 +468,8 @@ class Portfolio {
 
     if (!sideNav || !dotsNav || projectSections.length === 0) return;
 
-    let currentProjectNum: string | null = null;
-
     // Update active states on navigation elements
     const setActiveProject = (projectNum: string | null): void => {
-      currentProjectNum = projectNum;
-
       // Update side nav items
       sideNavItems?.forEach(item => {
         const target = item.getAttribute('data-nav-target');
@@ -746,13 +742,6 @@ class Portfolio {
       }, PANEL_LINGER_DURATION);
     };
 
-    // Hide panel immediately (used for close button)
-    const hidePanel = (): void => {
-      clearHideTimeout();
-      panel.classList.remove('is-visible');
-      panel.setAttribute('aria-hidden', 'true');
-    };
-
     // Pin panel (desktop)
     const pinPanel = (item: HTMLElement): void => {
       clearHideTimeout();
@@ -795,7 +784,6 @@ class Portfolio {
       if (!detailContent) return null;
 
       const description = detailContent.querySelector('[data-description]')?.textContent || '';
-      const duration = detailContent.querySelector('[data-duration]')?.textContent || '';
       const website = detailContent.querySelector('[data-website]')?.textContent || '';
       const tech = detailContent.querySelector('[data-tech]')?.textContent || '';
       const responsibilities = detailContent.querySelector('[data-responsibilities]');
