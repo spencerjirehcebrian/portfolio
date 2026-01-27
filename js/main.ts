@@ -30,6 +30,7 @@ class LoadingManager {
 
   // Mobile warning elements and config
   private loaderText: HTMLElement | null;
+  private loaderArc: HTMLElement | null;
   private mobileWarning: HTMLElement | null;
   private mobileWarningBtn: HTMLElement | null;
   private static readonly MOBILE_WARNING_KEY = 'portfolio-mobile-warning-dismissed';
@@ -38,6 +39,7 @@ class LoadingManager {
   constructor() {
     this.loader = document.querySelector('.site-loader');
     this.loaderText = document.querySelector('.loader-text');
+    this.loaderArc = document.querySelector('.loader-arc');
     this.mobileWarning = document.querySelector('.mobile-warning');
     this.mobileWarningBtn = document.querySelector('.mobile-warning-btn');
     this.body = document.body;
@@ -86,7 +88,10 @@ class LoadingManager {
       return;
     }
 
-    // Hide loading text, show warning
+    // Hide loader arc and text, show warning
+    if (this.loaderArc) {
+      this.loaderArc.style.display = 'none';
+    }
     this.loaderText.style.display = 'none';
     this.mobileWarning.classList.add('is-visible');
     this.mobileWarning.setAttribute('aria-hidden', 'false');
