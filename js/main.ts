@@ -251,6 +251,7 @@ class Portfolio {
     this.initExperiencePanel();
     this.initSkillsInteraction();
     this.initPaintingAttribution();
+    this.initCopyEmail();
 
     // Handle window resize
     window.addEventListener('resize', () => this.handleResize());
@@ -1023,6 +1024,33 @@ class Portfolio {
       artistEl.textContent = painting.artist;
       attribution.classList.add('is-visible');
     }
+  }
+
+  /**
+   * Initialize copy email to clipboard functionality
+   */
+  initCopyEmail(): void {
+    const emailBtns = document.querySelectorAll<HTMLButtonElement>('[data-copy-email]');
+
+    emailBtns.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const email = btn.getAttribute('data-copy-email');
+        if (!email) return;
+
+        try {
+          await navigator.clipboard.writeText(email);
+          btn.classList.add('copied');
+
+          // Remove class after animation completes
+          setTimeout(() => {
+            btn.classList.remove('copied');
+          }, 1500);
+        } catch (err) {
+          // Fallback: select text if clipboard API fails
+          console.warn('Clipboard API failed, using fallback');
+        }
+      });
+    });
   }
 
   /**
