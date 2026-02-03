@@ -11,9 +11,11 @@ npm run preview  # Preview production build
 npm run package  # Build + create tar.gz archive for deployment
 ```
 
+Do not run `npm run dev`. Assume it is already running in a separate terminal.
+
 ## Architecture
 
-This is a portfolio website built with vanilla TypeScript, Vite, and Three.js. No frontend framework (React/Vue/etc).
+Portfolio website built with vanilla TypeScript, Vite, and Three.js. No frontend framework.
 
 ### Project Structure
 
@@ -21,53 +23,54 @@ This is a portfolio website built with vanilla TypeScript, Vite, and Three.js. N
 js/
 ├── main.ts                    # Entry point, Portfolio class orchestrator
 └── webgl/
-    ├── three-manager.ts       # Three.js renderer, EffectComposer, uniforms
-    ├── scene-controller.ts    # Section detection, mouse tracking, color transitions
-    └── shaders/               # GLSL shaders as TypeScript modules
-        ├── procedural-gradient.ts   # Voronoi cell generation
-        ├── kuwahara.ts              # 4-quadrant painterly filter + mouse reveal
-        ├── watercolor-enhance.ts    # Paper texture, saturation boost
-        └── displacement.ts          # Water wave dynamics (ping-pong buffers)
+    ├── three-manager.ts       # Three.js renderer, EffectComposer, painting textures
+    ├── scene-controller.ts    # Mouse tracking, idle detection, painting transitions
+    └── shaders/
+        ├── procedural-gradient.ts   # Background source (painting texture or Voronoi fallback)
+        ├── kuwahara.ts              # 4-quadrant painterly filter + displacement reveal
+        ├── watercolor-enhance.ts    # Paper texture, Sobel edges, saturation, vignette
+        └── displacement.ts          # Wave equation simulation (ping-pong buffers)
 
 css/
-├── main.css           # Import orchestration using @layer
-├── design-tokens.css  # Golden ratio-based spacing/sizing (phi = 1.618)
+├── main.css           # @layer import orchestration
+├── design-tokens.css  # Golden ratio spacing (phi = 1.618)
 ├── typography.css     # Cormorant Garamond, Major Third scale (1.25)
 ├── layout.css         # Framed asymmetric grid system
-└── ...                # Additional modular CSS files
+├── components.css     # UI component styles
+├── animations.css     # Reveal animations, transitions
+└── utilities.css      # Helper classes
 ```
 
 ### WebGL Pipeline
 
-The background uses a Three.js post-processing pipeline:
+Three.js post-processing chain for watercolor effect:
 
-1. **Scene**: Fullscreen quad with procedural Voronoi material
-2. **Pass 1**: RenderPass - renders scene to texture
-3. **Pass 2**: Kuwahara filter (36 samples) with mouse reveal
-4. **Pass 3**: Watercolor enhancement (paper texture, saturation, vignette)
+1. **RenderPass** - Renders fullscreen quad with painting texture
+2. **Kuwahara Pass** - 4-quadrant painterly filter (36 samples), displacement-based mouse reveal
+3. **Watercolor Pass** - Paper texture overlay, Sobel edge darkening, saturation, vignette
 
-Desktop uses 8px Kuwahara kernel; mobile uses 4px with mouse effects disabled.
+Desktop: 8px Kuwahara kernel, ping-pong displacement buffers for water ripple simulation.
+Mobile: 4px kernel, displacement/mouse effects disabled.
 
-### Key Classes
+### Painting System
 
-- **Portfolio** (`main.ts`): Top-level orchestrator, initializes WebGL, navigation, animations
-- **ThreeManager** (`three-manager.ts`): Manages renderer, EffectComposer pipeline, displacement ping-pong buffers
-- **SceneController** (`scene-controller.ts`): Intersection Observer for sections, color transitions (2s ease-out), mouse position easing
+- `PAINTINGS` array in `three-manager.ts` contains metadata (title, artist, URL)
+- First painting loads synchronously for fast initial render
+- Remaining paintings load in background after UI reveal (desktop only)
+- Idle timeout (15s) triggers watercolor wash transition to next painting
+- `paintingchange` CustomEvent broadcasts transitions for UI attribution display
 
 ### CSS Architecture
 
-Uses `@layer` for cascade control:
-- Foundation: tokens -> reset -> typography -> layout
-- Components: components
-- Enhancement: animations -> utilities -> dark-mode
+Uses `@layer` cascade: tokens -> reset -> typography -> layout -> components -> animations -> utilities -> dark-mode
 
-Design system based on golden ratio (1.618) for spacing and Major Third (1.25) for typography scale.
+Design tokens: Golden ratio (1.618) spacing, Major Third (1.25) typography scale.
 
 ## Shader Conventions
 
-Shaders are TypeScript modules exporting `{ vertexShader, fragmentShader }` objects with GLSL template strings. Each shader has centralized uniform definitions at the top.
+Shaders export `{ vertexShader, fragmentShader }` with GLSL template strings. Uniforms defined at top of each shader. Ping-pong buffering used for displacement simulation.
 
 ## Deployment
 
-Docker multi-stage build: Node.js builder -> Nginx Alpine serving from `/usr/share/nginx/html`.
+Docker multi-stage: Node.js 20 Alpine builder -> Nginx Alpine. See `Dockerfile` and `nginx.conf`.
 

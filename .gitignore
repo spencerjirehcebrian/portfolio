@@ -42,3 +42,4 @@ portfolio.tar.gz
 
 # Claude settings (optional - keep local settings private)
 .claude/settings.local.json
+CLAUDE.md
