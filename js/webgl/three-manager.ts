@@ -456,7 +456,7 @@ export class ThreeManager {
         tDiffuse: { value: null },
         tDisplacement: { value: null },
         u_resolution: { value: new THREE.Vector2() },
-        u_kernelSize: { value: 8 },
+        u_kernelSize: { value: this.isMobile ? 4 : 8 },
         u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
         u_revealRadius: { value: 0.15 },
         u_revealSoftness: { value: 0.1 },
@@ -465,6 +465,7 @@ export class ThreeManager {
         u_time: { value: 0.0 },
         u_edgeDarkness: { value: 0.4 },
         u_distortionStrength: { value: 0.06 },
+        u_sampleMode: { value: this.isMobile ? 1 : 0 },
       },
       vertexShader: kuwaharaShader.vertexShader,
       fragmentShader: kuwaharaShader.fragmentShader,
@@ -490,6 +491,7 @@ export class ThreeManager {
         u_vignetteStrength: { value: 0.25 },
         u_useDisplacement: { value: this.isMobile ? 0 : 1 },
         u_contrast: { value: 1.1 },
+        u_skipEdgeDetection: { value: this.isMobile ? 1 : 0 },
       },
       vertexShader: watercolorEnhanceShader.vertexShader,
       fragmentShader: watercolorEnhanceShader.fragmentShader,
@@ -596,20 +598,42 @@ export class ThreeManager {
    * Clean up resources
    */
   dispose(): void {
+    // Noise plane
     this.noiseMaterial.dispose();
     this.noiseMesh.geometry.dispose();
+
+    // Textures
     this.paperTexture.dispose();
     this.placeholderTexture.dispose();
     this.paintingTextures.forEach(texture => {
       if (texture) texture.dispose();
     });
 
-    // Clean up displacement resources
+    // Displacement resources
     this.displacementTargetA.dispose();
     this.displacementTargetB.dispose();
     this.displacementMaterial.dispose();
     this.displacementMesh.geometry.dispose();
 
+    // Dispose displacement scene children
+    this.displacementScene.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        object.geometry?.dispose();
+        if (object.material instanceof THREE.Material) {
+          object.material.dispose();
+        }
+      }
+    });
+
+    // ShaderPass materials (created internally by ShaderPass)
+    if (this.kuwaharaPass.material) {
+      (this.kuwaharaPass.material as THREE.Material).dispose();
+    }
+    if (this.watercolorPass.material) {
+      (this.watercolorPass.material as THREE.Material).dispose();
+    }
+
+    // Composer and renderer
     this.composer.dispose();
     this.renderer.dispose();
   }

@@ -198,6 +198,13 @@ class Portfolio {
   loadingManager: LoadingManager | null = null;
   themeInitialized: boolean = false;
 
+  // Event handler references for cleanup
+  private resizeHandler: (() => void) | null = null;
+  private escapeHandler: ((e: KeyboardEvent) => void) | null = null;
+  private clickOutsideHandler: ((e: Event) => void) | null = null;
+  private experienceResizeHandler: (() => void) | null = null;
+  private skillsEscapeHandler: ((e: KeyboardEvent) => void) | null = null;
+
   constructor() {
     this.init();
   }
@@ -254,7 +261,8 @@ class Portfolio {
     this.initCopyEmail();
 
     // Handle window resize
-    window.addEventListener('resize', () => this.handleResize());
+    this.resizeHandler = () => this.handleResize();
+    window.addEventListener('resize', this.resizeHandler);
   }
 
   /**
@@ -357,14 +365,15 @@ class Portfolio {
     });
 
     // Close menu on escape key
-    document.addEventListener('keydown', (e: KeyboardEvent) => {
+    this.escapeHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && dropdownMenu.classList.contains('active')) {
         closeMenu();
       }
-    });
+    };
+    document.addEventListener('keydown', this.escapeHandler);
 
     // Close menu when clicking outside
-    document.addEventListener('click', (e: Event) => {
+    this.clickOutsideHandler = (e: Event) => {
       if (!dropdownMenu.classList.contains('active')) return;
 
       const target = e.target as HTMLElement;
@@ -374,7 +383,8 @@ class Portfolio {
       if (!isInsideMenu && !isTrigger) {
         closeMenu();
       }
-    });
+    };
+    document.addEventListener('click', this.clickOutsideHandler);
   }
 
   /**
@@ -925,7 +935,8 @@ class Portfolio {
     });
 
     // Listen for resize
-    window.addEventListener('resize', handleResize);
+    this.experienceResizeHandler = handleResize;
+    window.addEventListener('resize', this.experienceResizeHandler);
   }
 
   /**
@@ -978,11 +989,12 @@ class Portfolio {
     });
 
     // Close on escape key
-    document.addEventListener('keydown', (e: KeyboardEvent) => {
+    this.skillsEscapeHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         skillItems.forEach(item => item.classList.remove('is-expanded'));
       }
-    });
+    };
+    document.addEventListener('keydown', this.skillsEscapeHandler);
   }
 
   /**
@@ -1066,6 +1078,24 @@ class Portfolio {
    * Clean up
    */
   dispose(): void {
+    // Remove window/document listeners
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+    if (this.experienceResizeHandler) {
+      window.removeEventListener('resize', this.experienceResizeHandler);
+    }
+    if (this.escapeHandler) {
+      document.removeEventListener('keydown', this.escapeHandler);
+    }
+    if (this.clickOutsideHandler) {
+      document.removeEventListener('click', this.clickOutsideHandler);
+    }
+    if (this.skillsEscapeHandler) {
+      document.removeEventListener('keydown', this.skillsEscapeHandler);
+    }
+
+    // WebGL cleanup
     if (this.sceneController) {
       this.sceneController.dispose();
     }

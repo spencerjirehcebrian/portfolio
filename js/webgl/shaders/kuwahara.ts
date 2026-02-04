@@ -19,6 +19,7 @@ export const kuwaharaShader = {
     u_time: { value: 0.0 },
     u_edgeDarkness: { value: 0.4 },     // How dark the water edge shadow is
     u_distortionStrength: { value: 0.06 }, // Refraction intensity at edge
+    u_sampleMode: { value: 0 }, // 0 = full (36 samples), 1 = reduced (16 samples)
   },
 
   vertexShader: /* glsl */ `
@@ -45,6 +46,7 @@ export const kuwaharaShader = {
     uniform float u_time;
     uniform float u_edgeDarkness;
     uniform float u_distortionStrength;
+    uniform float u_sampleMode;
 
     varying vec2 vUv;
 
@@ -70,19 +72,33 @@ export const kuwaharaShader = {
         vec3 sumSq = vec3(0.0);
         vec2 qDir = quadrants[q];
 
-        // Fixed 3x3 grid per quadrant (9 samples each)
-        for (int y = 0; y < 3; y++) {
-          for (int x = 0; x < 3; x++) {
-            vec2 offset = qDir * vec2(float(x), float(y)) * r * 0.33 * texel;
-            vec3 s = texture2D(tDiffuse, uv + offset).rgb;
-            sum += s;
-            sumSq += s * s;
+        if (u_sampleMode < 0.5) {
+          // Desktop: 3x3 per quadrant = 36 samples
+          for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 3; x++) {
+              vec2 offset = qDir * vec2(float(x), float(y)) * r * 0.33 * texel;
+              vec3 s = texture2D(tDiffuse, uv + offset).rgb;
+              sum += s;
+              sumSq += s * s;
+            }
           }
+          colors[q] = sum / 9.0;
+        } else {
+          // Mobile: 2x2 per quadrant = 16 samples
+          for (int y = 0; y < 2; y++) {
+            for (int x = 0; x < 2; x++) {
+              vec2 offset = qDir * vec2(float(x), float(y)) * r * 0.5 * texel;
+              vec3 s = texture2D(tDiffuse, uv + offset).rgb;
+              sum += s;
+              sumSq += s * s;
+            }
+          }
+          colors[q] = sum / 4.0;
         }
 
-        // Calculate mean and variance
-        colors[q] = sum / 9.0;
-        vec3 v3 = (sumSq / 9.0) - (colors[q] * colors[q]);
+        // Calculate variance
+        float sampleCount = u_sampleMode < 0.5 ? 9.0 : 4.0;
+        vec3 v3 = (sumSq / sampleCount) - (colors[q] * colors[q]);
         vars[q] = dot(max(v3, vec3(0.0)), vec3(0.299, 0.587, 0.114));
       }
 

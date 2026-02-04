@@ -17,6 +17,7 @@ export const watercolorEnhanceShader = {
     u_vignetteStrength: { value: 0.25 },
     u_useDisplacement: { value: 1 },
     u_contrast: { value: 1.1 },
+    u_skipEdgeDetection: { value: 0 }, // 1 = skip Sobel (saves 8 samples on mobile)
   },
 
   vertexShader: /* glsl */ `
@@ -42,6 +43,7 @@ export const watercolorEnhanceShader = {
     uniform float u_vignetteStrength;
     uniform float u_useDisplacement;
     uniform float u_contrast;
+    uniform float u_skipEdgeDetection;
 
     varying vec2 vUv;
 
@@ -109,8 +111,12 @@ export const watercolorEnhanceShader = {
       // ============================================
       // EDGE DARKENING
       // Simulates paint pooling at boundaries
+      // Skip on mobile to save 8 texture samples
       // ============================================
-      float edges = detectEdges(sampleUV);
+      float edges = 0.0;
+      if (u_skipEdgeDetection < 0.5) {
+        edges = detectEdges(sampleUV);
+      }
       color *= (1.0 - edges * u_edgeDarkening * effectStrength);
 
       // 1. Saturation boost for vibrant watercolor look

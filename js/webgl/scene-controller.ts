@@ -35,6 +35,15 @@ export class SceneController {
   currentPaintingIndex: number = 0;
   totalPaintings: number = 7;
 
+  // Mouse event handler references for cleanup
+  private mouseMoveHandler: ((e: MouseEvent) => void) | null = null;
+  private mouseEnterHandler: (() => void) | null = null;
+  private mouseLeaveHandler: (() => void) | null = null;
+
+  // Visibility change handler for background tab optimization
+  private visibilityHandler: (() => void) | null = null;
+  private wasAnimatingBeforeHidden: boolean = false;
+
   // Wash transition
   isWashTransitioning: boolean = false;
   washProgress: number = 0;
@@ -59,6 +68,7 @@ export class SceneController {
     // Set up event listeners
     this.setupMouseTracking();
     this.setupIdleDetection();
+    this.setupVisibilityHandling();
   }
 
   /**
@@ -74,7 +84,7 @@ export class SceneController {
       }
     };
 
-    const updateMouse = (e: MouseEvent): void => {
+    this.mouseMoveHandler = (e: MouseEvent): void => {
       if (this.threeManager.isMobile) return;
       this.targetMousePos.x = e.clientX / window.innerWidth;
       this.targetMousePos.y = 1.0 - (e.clientY / window.innerHeight);
@@ -82,9 +92,12 @@ export class SceneController {
       onActivity();
     };
 
-    window.addEventListener('mousemove', updateMouse, { passive: true });
-    document.addEventListener('mouseenter', () => { this.isMouseActive = true; }, { passive: true });
-    document.addEventListener('mouseleave', () => { this.isMouseActive = false; }, { passive: true });
+    this.mouseEnterHandler = () => { this.isMouseActive = true; };
+    this.mouseLeaveHandler = () => { this.isMouseActive = false; };
+
+    window.addEventListener('mousemove', this.mouseMoveHandler, { passive: true });
+    document.addEventListener('mouseenter', this.mouseEnterHandler, { passive: true });
+    document.addEventListener('mouseleave', this.mouseLeaveHandler, { passive: true });
   }
 
   /**
@@ -113,6 +126,29 @@ export class SceneController {
         }
       }
     }, 500);
+  }
+
+  /**
+   * Set up visibility change handling for background tab optimization
+   * Pauses animation when tab is hidden to save CPU/battery
+   */
+  setupVisibilityHandling(): void {
+    this.visibilityHandler = () => {
+      if (document.hidden) {
+        // Tab hidden - pause animation
+        this.wasAnimatingBeforeHidden = this.isAnimating;
+        if (this.isAnimating) {
+          this.stop();
+        }
+      } else {
+        // Tab visible - resume if was running
+        if (this.wasAnimatingBeforeHidden && !this.isAnimating) {
+          this.start();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', this.visibilityHandler);
   }
 
   /**
@@ -307,8 +343,25 @@ export class SceneController {
    */
   dispose(): void {
     this.stop();
+
     if (this.idleCheckInterval) {
       clearInterval(this.idleCheckInterval);
+    }
+
+    // Remove mouse listeners
+    if (this.mouseMoveHandler) {
+      window.removeEventListener('mousemove', this.mouseMoveHandler);
+    }
+    if (this.mouseEnterHandler) {
+      document.removeEventListener('mouseenter', this.mouseEnterHandler);
+    }
+    if (this.mouseLeaveHandler) {
+      document.removeEventListener('mouseleave', this.mouseLeaveHandler);
+    }
+
+    // Remove visibility listener
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
     }
   }
 }
